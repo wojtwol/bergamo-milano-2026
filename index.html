@@ -177,8 +177,27 @@ font-size:13px;margin-bottom:8px;background:var(--white)}
 .ticket-summary-card h3{font-size:16px;margin-bottom:10px}
 .today-badge{display:inline-block;background:var(--cat-event);color:#fff;font-size:9px;
 font-weight:700;padding:2px 6px;border-radius:10px;margin-left:6px;vertical-align:middle}
-.tl-ticket-link{display:inline-block;margin-left:6px;font-size:12px;text-decoration:none;
-background:#ebf8ff;padding:2px 8px;border-radius:10px;cursor:pointer;color:var(--blue)}
+.show-ticket-btn{display:inline-flex;align-items:center;gap:4px;background:#ebf8ff;color:#2c5282;
+border:1px solid #bee3f8;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;
+cursor:pointer;margin-top:4px}
+.show-ticket-btn:active{background:#bee3f8}
+
+/* TICKET SELECTOR OVERLAY */
+.ts-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9998;
+background:rgba(0,0,0,.7);align-items:flex-end;justify-content:center}
+.ts-overlay.open{display:flex}
+.ts-panel{background:#fff;width:100%;max-width:480px;max-height:70vh;border-radius:16px 16px 0 0;
+padding:16px;overflow-y:auto;animation:tsUp .25s ease}
+@keyframes tsUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.ts-title{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.ts-close{background:none;border:none;font-size:22px;cursor:pointer;color:#888;padding:4px 8px}
+.ts-item{display:flex;align-items:center;gap:10px;padding:10px;background:var(--gray);
+border-radius:8px;margin-bottom:6px;cursor:pointer;transition:.15s}
+.ts-item:active{background:#bee3f8}
+.ts-item-icon{font-size:18px;flex-shrink:0}
+.ts-item-info{flex:1;min-width:0}
+.ts-item-label{font-size:13px;font-weight:600}
+.ts-item-sub{font-size:11px;color:#888}
 
 /* FULLSCREEN VIEWER */
 .fs-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;
@@ -232,6 +251,14 @@ Otwórz pełną mapę Ani (58 miejsc)
 <!-- TAB: INFO -->
 <div class="tab-content" id="tab-info">
 <div id="infoContainer"></div>
+</div>
+
+<!-- TICKET SELECTOR -->
+<div class="ts-overlay" id="tsOverlay" onclick="closeTsOverlay()">
+<div class="ts-panel" onclick="event.stopPropagation()">
+<div class="ts-title"><span id="tsTitle">Wybierz bilet</span><button class="ts-close" onclick="closeTsOverlay()">✕</button></div>
+<div id="tsItems"></div>
+</div>
 </div>
 
 <!-- FULLSCREEN VIEWER -->
@@ -727,7 +754,7 @@ h+='<span class="tl-badge '+it.cat+'">'+catLabel(it.cat)+'</span>';
 h+='<div class="tl-title">'+it.title+'</div>';
 if(it.desc)h+='<div class="tl-desc">'+it.desc+'</div>';
 if(it.map)h+='<a class="tl-map" href="'+gmaps(it.map)+'" target="_blank" rel="noopener">📍 mapa</a>';
-if(TICKET_DAY_LINKS[(i+1)+'-'+j])h+='<span class="tl-ticket-link" onclick="goToTicket(\''+TICKET_DAY_LINKS[(i+1)+'-'+j]+'\')">🎫 bilet</span>';
+if(PLAN_TICKETS[(i+1)+'-'+j])h+='<button class="show-ticket-btn" onclick="event.stopPropagation();showPlanTickets(\''+(i+1)+'-'+j+'\')">🎫 Pokaż bilety</button>';
 if(it.guide)h+='<button class="guide-toggle" onclick="toggleGuide(\''+uid+'\')">🎤 Opowieść przewodnika</button><div class="guide-content" id="'+uid+'">'+nl2br(it.guide)+'</div>';
 if(it.tip)h+='<div class="tip-box">💡 '+nl2br(it.tip)+'</div>';
 h+='</div></div>';
@@ -956,14 +983,63 @@ const TICKET_SUMMARY=[
 {item:'RAZEM',cost:'~760 €',hl:true}
 ];
 
-// Map ticket events to day items for linking
-const TICKET_DAY_LINKS={
-'3-7':'koncert','3-8':'koncert', // day3 items: Teatro, Koncert
-'4-3':'duomo','4-4':'duomo','4-5':'duomo','4-6':'duomo', // Duomo items
-'4-10':'bugs','4-11':'bugs', // Auditorium, Bugs Bunny
-'5-2':'trenord-tam','5-3':'trenord-tam', // MI→Tirano
-'5-4':'bernina-tam', // Bernina
-'5-11':'trenord-pow','5-12':'trenord-pow','5-13':'trenord-pow' // return
+// Map plan day items to ticket selectors for inline "Pokaż bilet" buttons
+// Key: 'dayId-itemIdx', Value: {title, items:[{label,sub,imgKey}]}
+const PLAN_TICKETS={
+'3-8':{title:'🎻 Koncert — bilety',items:[
+{label:'Fila 10, Miejsce 6',sub:'Ridotto under 30 · 12,50 €',imgKey:'koncert-1'},
+{label:'Fila 10, Miejsce 7',sub:'Intero · 14,50 €',imgKey:'koncert-2'},
+{label:'Fila 11, Miejsce 7',sub:'Ridotto over 60 · 12,50 €',imgKey:'koncert-3'},
+{label:'Fila 11, Miejsce 6',sub:'Ridotto over 60 · 12,50 €',imgKey:'koncert-4'}
+]},
+'4-4':{title:'⛪ Duomo — bilety',items:[
+{label:'Rez.1: Ragazzi 6-18',sub:'SVFD52KQR84DBBW6 · 11 €',imgKey:'duomo1-1'},
+{label:'Rez.1: Full price',sub:'SVFDW46Q75KPBL66 · 22 €',imgKey:'duomo1-2'},
+{label:'Rez.1: Full price',sub:'SVFD52KQR8QP5J9E · 22 €',imgKey:'duomo1-3'},
+{label:'Rez.2: Ragazzi 6-18',sub:'SVFD8ELZJKXYDR6B · 11 €',imgKey:'duomo2-1'},
+{label:'Rez.2: Full price',sub:'SVFDR3QY269D4D8X · 22 €',imgKey:'duomo2-2'},
+{label:'Rez.2: Full price',sub:'SVFDW46Q79D69ZRJ · 22 €',imgKey:'duomo2-3'}
+]},
+'4-11':{title:'🐰 Bugs Bunny — bilety',items:[
+{label:'PLATEA F14/19',sub:'Intero · 24 €',imgKey:'bugs-4'},
+{label:'PLATEA F14/20',sub:'Under 35 · 12 €',imgKey:'bugs-3'},
+{label:'PLATEA F14/21',sub:'Under 35 · 12 €',imgKey:'bugs-2'},
+{label:'PLATEA F14/22',sub:'Intero · 24 €',imgKey:'bugs-1'}
+]},
+'5-2':{title:'🚂 Trenord MI→Tirano — bilety',items:[
+{label:'Bilet 1',sub:'12,50 €',imgKey:'trenord1-1'},
+{label:'Bilet 2',sub:'12,50 €',imgKey:'trenord2-1'},
+{label:'Bilet 3 (Emilka)',sub:'6,30 € dziecięcy',imgKey:'trenord3-1'},
+{label:'Bilet 4',sub:'12,50 €',imgKey:'trenord4-1'},
+{label:'Bilet 5',sub:'12,50 €',imgKey:'trenord5-1'},
+{label:'Bilet 6',sub:'12,50 €',imgKey:'trenord6-1'}
+]},
+'5-4':{title:'🏔️ Bernina TAM — bilety',items:[
+{label:'📋 Rezerwacja',sub:'Nr 2817044-1',imgKey:'bernina-03'},
+{label:'Anna Woloszyk',sub:'CHF 33,00',imgKey:'bernina-01'},
+{label:'Zuzanna Grablewska',sub:'CHF 33,00',imgKey:'bernina-05'},
+{label:'Justyna Wasilewska',sub:'CHF 33,00',imgKey:'bernina-07'},
+{label:'Emilia Wasilewska',sub:'CHF 16,50 (1/2)',imgKey:'bernina-09'},
+{label:'Teresa Harasim',sub:'CHF 33,00',imgKey:'bernina-11'},
+{label:'Lucyna Poczobut',sub:'CHF 33,00',imgKey:'bernina-13'}
+]},
+'5-10':{title:'🏔️ Bernina POWRÓT — bilety',items:[
+{label:'📋 Rezerwacja',sub:'Nr 2817045-1',imgKey:'bernina-04'},
+{label:'Anna Woloszyk',sub:'CHF 33,00',imgKey:'bernina-02'},
+{label:'Zuzanna Grablewska',sub:'CHF 33,00',imgKey:'bernina-06'},
+{label:'Justyna Wasilewska',sub:'CHF 33,00',imgKey:'bernina-08'},
+{label:'Emilia Wasilewska',sub:'CHF 16,50 (1/2)',imgKey:'bernina-10'},
+{label:'Teresa Harasim',sub:'CHF 33,00',imgKey:'bernina-12'},
+{label:'Lucyna Poczobut',sub:'CHF 33,00',imgKey:'bernina-14'}
+]},
+'5-13':{title:'🚂 Trenord Tirano→MI — bilety',items:[
+{label:'Bilet 1',sub:'12,50 €',imgKey:'trenord1-2'},
+{label:'Bilet 2',sub:'12,50 €',imgKey:'trenord2-2'},
+{label:'Bilet 3 (Emilka)',sub:'6,30 € dziecięcy',imgKey:'trenord3-2'},
+{label:'Bilet 4',sub:'12,50 €',imgKey:'trenord4-2'},
+{label:'Bilet 5',sub:'12,50 €',imgKey:'trenord5-2'},
+{label:'Bilet 6',sub:'12,50 €',imgKey:'trenord6-2'}
+]}
 };
 
 function getTodayDay(){
@@ -1075,13 +1151,26 @@ container.innerHTML='<div style="font-size:12px;color:#888;padding:8px">Obraz bi
 }
 }
 
-function goToTicket(evtType){
-// Switch to tickets tab
-document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active')});
-document.querySelectorAll('.nav-btn')[2].classList.add('active');
-document.querySelectorAll('.tab-content').forEach(function(t){t.classList.remove('active')});
-document.getElementById('tab-tickets').classList.add('active');
-window.scrollTo({top:0,behavior:'smooth'});
+function showPlanTickets(key){
+var data=PLAN_TICKETS[key];
+if(!data)return;
+document.getElementById('tsTitle').textContent=data.title;
+var h='';
+data.items.forEach(function(it){
+if(typeof TICKET_IMAGES!=='undefined'&&TICKET_IMAGES[it.imgKey]){
+h+='<div class="ts-item" onclick="closeTsOverlay();openFullscreen(TICKET_IMAGES[\''+it.imgKey+'\'])">';
+h+='<span class="ts-item-icon">🎫</span><div class="ts-item-info">';
+h+='<div class="ts-item-label">'+it.label+'</div>';
+h+='<div class="ts-item-sub">'+it.sub+'</div>';
+h+='</div></div>';
+}});
+document.getElementById('tsItems').innerHTML=h;
+document.getElementById('tsOverlay').classList.add('open');
+document.body.style.overflow='hidden';
+}
+function closeTsOverlay(){
+document.getElementById('tsOverlay').classList.remove('open');
+document.body.style.overflow='';
 }
 
 // INIT
