@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#1a365d">
 <meta name="mobile-web-app-capable" content="yes">
 <title>Bergamo & Milano 2026</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -136,6 +137,16 @@ font-size:13px;cursor:pointer}
 .person-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .person-chip{background:var(--gray);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:600}
 
+/* DAY MAP */
+.day-map{height:260px;border-radius:var(--radius);margin-bottom:4px;z-index:1;box-shadow:var(--shadow)}
+.day-map-link{display:block;text-align:center;font-size:12px;color:var(--blue2);margin:4px 0 16px;font-weight:600;text-decoration:none}
+
+/* TRANSIT */
+.transit{display:flex;align-items:center;gap:6px;padding:4px 0 4px 6px;font-size:11px;color:#888;font-style:italic}
+.transit-icon{font-size:13px;flex-shrink:0}
+.transit-time{margin-left:auto;font-weight:600;color:#666;white-space:nowrap}
+.map-marker-icon{display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1}
+
 @media(min-width:600px){
 .map-grid{grid-template-columns:1fr 1fr 1fr}
 .day-section{max-width:640px;margin:0 auto}
@@ -185,6 +196,7 @@ Otwórz pełną mapę Ani (58 miejsc)
 <button class="nav-btn" data-tab="tab-info"><span class="icon">ℹ️</span>Info</button>
 </nav>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 // ========== DATA ==========
 const DAYS=[
@@ -212,21 +224,21 @@ guide:'Funikular działa nieprzerwanie od 1887 roku! Dwa wagony połączone lin�
 tip:'Rozważcie bilet 24h Tourist Ticket – autobusy ATB + oba funikulary. Bilet jednorazowy: ok. 1,35 € (strefa A), ważny 75 min.'},
 {time:'10:15',cat:'landmark',title:'Piazza Vecchia – serce Città Alta ⭐',desc:'Główny plac górnego miasta. Le Corbusier nazwał go „najpiękniejszym placem Europy"! Fontanna Contariniego, Palazzo della Ragione, Torre Civica, Palazzo Nuovo.',
 map:'Piazza Vecchia Bergamo',
-guide:'Palazzo della Ragione z XII w. – najstarszy budynek administracji publicznej w Lombardii. Fontanna z 1780 r. od weneckiego podestà. Palazzo Nuovo – projektant Scamozzi, budowa 1611-1928 (317 lat!).\n\nDla Emilki: kiedyś lwy przy fontannie naprawdę „wypływały" wodę! Palazzo della Ragione ma >800 lat – nie było jeszcze Ameryki!\n\nDla Zuzi: idealny plac do zdjęć rano, kiedy światło pada na fasadę.'},
+guide:'Le Corbusier odwiedził Bergamo w 1949 r. podczas kongresu CIAM 7 (w Palazzo della Ragione!) i powiedział: „Nie można ruszyć ani jednego kamienia – to byłaby zbrodnia!" Plac powstał dokładnie w miejscu starożytnego forum rzymskiego.\n\nPalazzo della Ragione z XII w. – najstarszy zachowany budynek administracji publicznej w całej Lombardii. Pod jego arkadami ukryty jest XVIII-wieczny zegar słoneczny – w południe promień słońca przechodzi przez otwór w tarczy i wskazuje datę oraz znak zodiaku na podłodze!\n\nFontanna – dar weneckiego podestà Alvise Contariniego z 1780 r. Ciekawostka: w 1885 r. fontannę usunięto i postawiono pomnik Garibaldiego – wróciła dopiero na początku XX w.!\n\nNa ścianie Bazyliki S.M. Maggiore (tuż obok) widoczne są żelazne pręty – „misure" – średniowieczne wzorce miar długości używane na bergamskim targu.\n\nPalazzo Nuovo naprzeciwko – zaprojektowany przez Vincenza Scamozziego w 1611 r., ukończony dopiero w 1928 r.! Dziś mieści Bibliotekę Angelo Mai – jedną z najważniejszych w Italii (inkunabuły, rękopisy).\n\nDla Emilki: ten plac stoi tu, gdzie 2000 lat temu Rzymianie mieli swój rynek! A ta fontanna raz zniknęła na ponad 20 lat! Pod tymi arkadami jest zegar słoneczny – szukamy razem?'},
 {time:'11:00',cat:'landmark',title:'Campanone (Torre Civica) 🔔',desc:'Wieża 52,76 m z największym dzwonem Lombardii. Windą lub 230 schodów. Wstęp: ok. 7 €. Panorama na oba miasta i Alpy.',
 map:'Campanone Torre Civica Bergamo',
 guide:'Każdego wieczoru o 22:00 dzwon bije dokładnie 100 razy – tradycja wenecka, zamknięcie bram! Dzwon z 1656 r. waży >5 ton.\n\nDla Emilki: 100 razy każdego wieczoru – kiedyś to znaczyło zamknięcie bram, nikt nie mógł wejść ani wyjść! Liczymy razem wieczorem?',
 tip:'Z Emilką i babciami – windą! Na szczycie taras widokowy z mapą panoramiczną alpejskich szczytów.'},
 {time:'11:45',cat:'landmark',title:'Bazylika Santa Maria Maggiore + Kaplica Colleoniego ⭐',desc:'Piazza Duomo – Bazylika (XII w.) i Kaplica Colleoniego (1472-1476). Wejście bezpłatne.',
 map:'Cappella Colleoni Bergamo',
-guide:'BAZYLIKA: z zewnątrz surowa, romańska. Wewnątrz – barokowa eksplozja! Złocone sztukaterie, gobeliny XVI-XVII w., inkrustowane stalle z intarsją (obrazy z tysięcy kawałków drewna!).\n\nKAPLICA COLLEONIEGO: Bartolomeo Colleoni (1395-1475), słynny condottiero. Kazał zburzyć część bazyliki na swoją kaplicę! Herb z trzema „kulami" – dotknięcie prawą ręką = szczęście. Wypolerowane od setek lat!\n\nDla Zuzi i Emilki: koniecznie dotknijcie „kul" na herbie! W bazylice – drewniane obrazki ułożone z tysięcy kawałków, jak puzzle!'},
+guide:'BAZYLIKA SANTA MARIA MAGGIORE powstała w XII w. jako wotum za ustanie epidemii. Z zewnątrz surowa romańska bryła. Ale wewnątrz – absolutna barokowa eksplozja! Złocone sztukaterie, gobeliny z XVI–XVII w., inkrustowane drewniane stalle chórowe ze scenami biblijnymi wykonanymi techniką intarsji (obrazy z tysięcy kawałków kolorowego drewna!). Tu spoczywa Gaetano Donizetti – słynny kompozytor operowy urodzony w Bergamo („Łucja z Lammermoor", „Napój miłosny"). Na ścianie zewnętrznej: żelazne „misure" – średniowieczne wzorce miar długości.\n\nKAPLICA COLLEONIEGO – arcydzieło renesansu (1472–1476), wzniesiona przez Giovanniego Antonia Amadea. Bartolomeo Colleoni – jeden z najsłynniejszych condottierów, służył Wenecji jako kapitan generalny. Miał prawie 2 metry wzrostu! Kazał zburzyć sakrystię bazyliki na swoją kaplicę. Herb na kratce z trzema „kulami" (testicoli) – „Colleoni" w dialekcie bergamskim brzmi jak... cóż, powiedzmy że herb nawiązuje do nazwiska. „Collio! Collio! Collio!" – tak brzmiał jego okrzyk bojowy. Dotykanie herbu przynosi szczęście!\n\nTAJEMNICA GROBU: przez wieki sarkofag wydawał się pusty! Kiedy król Wiktor Emanuel III odwiedził Bergamo w 1922 r., nikt nie potrafił mu powiedzieć, gdzie leżą szczątki Colleoniego! Zagadkę rozwiązano dopiero w 1969 r. – ciało odnaleziono w krypcie pod dolnym sarkofagiem, z mieczem pod plecami. Obok: grób jego ukochanej córki Medei, zmarłej w wieku 14 lat. Przy jej szczątkach znaleziono wypchanego ptaszka – jej pupila – widocznego do dziś pod szklaną kopułką! Kopułę kaplicy pokrywają freski młodego Tiepola (1732–1733).\n\nDla Zuzi i Emilki: koniecznie dotknijcie herbu na szczęście! I szukajcie ptaszka Medei – ma ponad 550 lat!'},
 {time:'12:30',cat:'landmark',title:'Katedra w Bergamo (Duomo)',desc:'Katedra pw. św. Aleksandra, patrona miasta. Neoklasyczna fasada z białego marmuru. Obrazy Moroniego i Tiepola.',
 map:'Duomo di Bergamo'},
 {time:'13:00',cat:'food',title:'Obiad w Città Alta 🍽️',desc:'Rekomendowane: Il Circolino (dawny klasztor i więzienie!) lub Da Mimmo (kuchnia bergamaska). Budżet: 15-25 €/os.',
 guide:'KUCHNIA BERGAMASKA – Europejska Stolica Sera! 9 serów PDO.\n\nCo spróbować:\n• CASONCELLI ALLA BERGAMASCA – pierożki z mięsem, rodzynkami i amaretti, z masłem szałwiowym\n• POLENTA TARAGNA – z serem\n• Deser: STRACCIATELLA – wynaleziona tutaj!\n\nDla Emilki: casoncelli powinny zasmakować (słodko-słone). Na deser stracciatella w La Marianna!'},
 {time:'14:30',cat:'landmark',title:'Spacer po Murach Weneckich 🏛️',desc:'Mury Weneckie – UNESCO od 2017. 6 km murów. Spacer 1-1,5 km z widokami na Città Bassa, dolinę i Alpy. Ścieżka wygodna, zacieniona.',
 map:'Mura Venete Bergamo',
-guide:'Zbudowane 1561-1588 przez Republikę Wenecką. Bergamo – ostatni bastion wenecki przed granicą z Mediolanem. Paradoks: mury NIGDY nie zostały zaatakowane! Podczas budowy wyburzono ok. 250 domów i kilka kościołów.\n\nDla Emilki: te mury budowali 27 lat – dłużej niż ty żyjesz razy cztery!'},
+guide:'Mury zbudowane w latach 1561–1588 przez Republikę Wenecką (panującą tu 350 lat). Bergamo było ostatnim bastionem weneckim przed granicą z Księstwem Mediolanu. Paradoks: mury NIGDY nie zostały zaatakowane – dzięki temu zachowały się idealnie! Podczas budowy Wenecjanie wyburzyli ok. 250 domów i kilka kościołów. System obronny: bastiony, stanowiska dział, bramy i tajne tunele!\n\nO wpis na listę UNESCO (uzyskany w 2017) bergamczycy starali się od 2007 r. W 2016, tuż przed ostateczną decyzją, 1260 mieszkańców utworzyło żywy łańcuch przytuleń wokół całych murów – każdy przytulał następnego – fala obiegła całe 6 km! Rekord świata!\n\nDla Emilki: Republika Wenecji – państwo ze stolicą w mieście na wodzie z gondolami! Budowali te mury 27 lat! A żeby je obronić przed UNESCO, ludzie się przytulali!'},
 {time:'15:30',cat:'landmark',title:'Funikular na San Vigilio 🏔️',desc:'Drugi funikular – jeszcze wyżej! Jazda 3 min. Najlepszy widok panoramiczny na Bergamo, dolinę Padańską i Alpy. Ruiny zamku z XIV w.',
 map:'San Vigilio Bergamo',
 guide:'Funikular od 27 sierpnia 1912 r. Zamek na szczycie (Castello di San Vigilio) z XIV w. – strażnicy kontrolowali stąd wszystkie drogi.\n\nDla Emilki: na szczycie ruiny prawdziwego zamku – kiedyś stali tu rycerze!',
@@ -258,7 +270,7 @@ guide:'Otwarty 1931 r. na polecenie Mussoliniego. Hala: 72 m szer., 36 m wys.! B
 {time:'12:00',cat:'transport',title:'Metro do Navigli + zakwaterowanie',desc:'M2 (zielona) → Porta Genova (~15 min), 10 min pieszo do 3 Via Casale. Bilet: 2,20 €, dzieci <14 gratis.',
 map:'Via Casale 3 Milano Italy',
 guide:'NAVIGLI – system kanałów od średniowiecza. Naviglio Grande (50 km) łączył Mediolan z Lago Maggiore. Marmur na Duomo transportowano tymi kanałami! Dziś kolorowe kamienice, bary, galerie.',
-tip:'Bilet 24h (7,60 €) lub 48h (13,80 €) jeśli intensywne zwiedzanie.'},
+tip:'Bilet 24h (7,60 €) lub 48h (13,80 €) jeśli planujecie intensywne zwiedzanie.'},
 {time:'12:30',cat:'food',title:'Lunch w Navigli 🍝',desc:'Risotto alla milanese, cotoletta alla milanese, pizza. Z listy Ani: Osteria da Fortunata, Berberè, La Magolfa.'},
 {time:'13:30',cat:'landmark',title:'Navigli → Colonne di San Lorenzo',desc:'Trasa piesza ~2 km: Basilica di Sant\'Eustorgio (IV w.) → Colonne (16 kolumn z II/III w.!) → Parco delle Basiliche.',
 map:'Colonne di San Lorenzo Milano',
@@ -275,27 +287,31 @@ tip:'Navigli wieczorem – magiczne! Kanał podświetlony, barowe ogródki na na
 summary:'Duomo di Milano ⭐ · Tarasy dachowe · Bugs Bunny at the Symphony 🐰🎵',
 items:[
 {time:'8:30',cat:'food',title:'Śniadanie w Navigli',desc:'Croissant z pistacjowym kremem, cappuccino – dolce vita!'},
-{time:'9:30',cat:'transport',title:'Metro do Duomo',desc:'M2→M1 (~15 min) lub M2 do Cadorna + spacer Via Dante.'},
+{time:'9:30',cat:'transport',title:'Metro do Duomo',desc:'M2→M1 (~15 min, przesiadka Cadorna) lub M2 do Cadorna + spacer Via Dante (~30 min).'},
 {time:'10:00',cat:'landmark',title:'Piazza del Duomo',desc:'Fasada katedry + wejście do Gallerii V. Emanuele II.',
 map:'Piazza del Duomo Milano',
 guide:'DUOMO DI MILANO – 3. największa katedra katolicka świata. Budowa od 1386, fasada ukończona 1813 na rozkaz Napoleona. >3400 posągów, 135 wieżyczek, 96 gargulców. Biało-różowy marmur z Candoglii – transportowany kanałami!\n\nNa szczycie (108,5 m) – złota Madonnina (1774), symbol Mediolanu.\n\nDla Emilki: >3400 posążków! Gargulce jak smoki! Madonnina na 108 m – jakby 30 Emilków!\n\n⚠️ DRESS CODE: zakryte ramiona i kolana! Dotyczy też Zuzi!'},
-{time:'10:30',cat:'event',title:'Kontrola bezpieczeństwa',desc:'Kontrola w stylu lotniskowym przy wejściu.'},
-{time:'11:00',cat:'landmark',title:'⭐ TARASY DACHOWE Duomo',desc:'Windą na pierwszy poziom, potem 50-80 schodów. Panorama 360° – Alpy i Apeniny! Gargulce, >2000 posągów, Madonnina z bliska.',
+{time:'10:30',cat:'event',title:'Kontrola bezpieczeństwa',desc:'Kontrola w stylu lotniskowym przy wejściu. Kolejka do windy na tarasy.'},
+{time:'10:45',cat:'landmark',title:'⭐ TARASY DACHOWE Duomo',desc:'Windą na pierwszy poziom, potem 50-80 schodów. Panorama 360° – Alpy i Apeniny! Gargulce, >2000 posągów, Madonnina z bliska.',
 guide:'Dach to ~8000 m² – jak boisko piłkarskie! >2000 posągów, każdy inny. Marmur zmienia kolor z białego na różowy o zachodzie – katedra „różowieje"!\n\nDla Zuzi: jedno z niewielu miejsc, gdzie chodzisz po dachu gotyckiej katedry! Instagram gold!',
 tip:'Bilety rodzinne z windą ~25-30 € (2+1-2 dzieci). Rezerwujcie na duomomilano.it! W niedzielę rezerwacja obowiązkowa!'},
-{time:'11:45',cat:'landmark',title:'Wnętrze katedry',desc:'5 naw, 52 kolumny, witraże XV-XVI w. Posąg św. Bartłomieja „bez skóry". Meridiana (zegar słoneczny). Święty Gwóźdź.',
+{time:'12:00',cat:'landmark',title:'Wnętrze katedry',desc:'5 naw, 52 kolumny, witraże XV-XVI w. Posąg św. Bartłomieja „bez skóry". Meridiana (zegar słoneczny). Święty Gwóźdź.',
 guide:'MERIDIANA (1786) – mosiężny pas ze znakami zodiaku na podłodze. Słońce przez otwór na 24 m wskazuje miesiąc!\n\n„ŚWIĘTY GWÓŹDŹ" – relikwiarz na 45 m, opuszczany raz w roku „nivolą" – urządzeniem Leonarda da Vinci!\n\nPOSĄG ŚW. BARTŁOMIEJA – niesie własną skórę jak szal. Służył studentom medycyny!'},
-{time:'12:30',cat:'landmark',title:'Krypta św. Karola Boromeusza',desc:'Kryształowy sarkofag z relikwiami patrona Mediolanu.',
+{time:'12:30',cat:'landmark',title:'Krypta + Strefa archeologiczna',desc:'Krypta: kryształowy sarkofag św. Karola Boromeusza. Podziemia: Baptysterium św. Jana (IV w.), Bazylika św. Tekli – tu wg tradycji św. Ambroży ochrzcił św. Augustyna w 387 r.!',
 guide:'Karol Boromeusz (1538-1584) – podczas dżumy 1576 osobiście odwiedzał chorych, sprzedał meble kościelne. Kanonizowany 26 lat po śmierci.\n\nDla Emilki: ten święty był tak odważny, że kiedy wszyscy uciekali, on został i pomagał.'},
-{time:'13:00',cat:'landmark',title:'Strefa archeologiczna (podziemia)',desc:'Baptysterium św. Jana (IV w.), Bazylika św. Tekli. Tu wg tradycji św. Ambroży ochrzcił św. Augustyna w 387 r.!'},
-{time:'13:30',cat:'food',title:'Szybki lunch',desc:'Panzerotti Luini (z listy Ani!) – smażone calzone, 3-5 €/szt. Lub Spontini – kultowa pizza al taglio.',
+{time:'13:00',cat:'food',title:'Szybki lunch 🥟',desc:'Panzerotti Luini (z listy Ani!) – smażone calzone, 3-5 €/szt. Via Santa Radegonda 16, za Duomo. Lub Spontini – kultowa pizza al taglio.',
 map:'Panzerotti Luini Milano'},
-{time:'15:00',cat:'event',title:'Auditorium di Milano',desc:'Largo Gustav Mahler. Przyjść 30 min wcześniej!',
+{time:'13:30',cat:'landmark',title:'Galleria V. Emanuele II + spacer',desc:'Spacer przez Gallerię (tradycja z bykiem! 🐂), kawa. Potem w kierunku Auditorium – Via Torino lub metro.',
+map:'Galleria Vittorio Emanuele II Milano',
+guide:'„Salon Mediolanu" z 1867 r. Szklany kopulasty dach. TRADYCJA Z BYKIEM: na mozaice z herbami 4 miast – piętą na „klejnotach" byka + 3 obroty = szczęście! Byk wydrążony od turystów.\n\nEmilka i Zuzia MUSZĄ to zrobić! 🐂'},
+{time:'14:30',cat:'event',title:'Okolice Auditorium',desc:'Odpoczynek przed koncertem. Spacer nad kanałem, kawiarnia w okolicy Largo Mahler.',
 map:'Auditorium di Milano Largo Gustav Mahler'},
+{time:'15:00',cat:'event',title:'Auditorium di Milano',desc:'Largo Gustav Mahler. Wejście, zajęcie miejsc.'},
 {time:'15:30',cat:'event',title:'🐰 BUGS BUNNY AT THE SYMPHONY!',desc:'Orchestra Sinfonica di Milano. Koncert symfoniczny z projekcjami Looney Tunes! Do 17:40.',
 guide:'Hit nie tylko dla Emilki! Orkiestra na żywo: Rossini, Strauss, Wagner, Liszt, Czajkowski. Twórcy Looney Tunes przemycali edukację muzyczną.\n\nDla Emilki: Bugs Bunny dyryguje orkiestrą, Daffy Duck tańczy balet!\n\nDla Zuzi: aranżacje Carla Stallinga – jedne z najlepszych w historii muzyki filmowej.'},
-{time:'18:00',cat:'transport',title:'Powrót do Navigli',desc:'Metro do Porta Genova.'},
-{time:'19:00',cat:'food',title:'Kolacja w Navigli 🍷',desc:'Wieczór w ulubionych knajpkach nad kanałem.'}
+{time:'17:40',cat:'transport',title:'Powrót do Navigli',desc:'Pieszo wzdłuż kanału (~12 min) lub metro M2 Porta Genova + pieszo.'},
+{time:'18:10',cat:'event',title:'Odpoczynek w apartamencie',desc:'Chwila wytchnienia po pełnym dniu.'},
+{time:'19:00',cat:'food',title:'Kolacja w Navigli 🍷',desc:'Wieczór w ulubionych knajpkach nad kanałem. Osteria da Fortunata, Berberè, La Magolfa.'}
 ]},
 // DAY 5
 {id:5,emoji:'🏔️',name:'St. Moritz',date:'Poniedziałek, 4 maja',city:'Milano → St. Moritz → Milano',
@@ -317,7 +333,7 @@ map:'Lake St. Moritz',
 tip:'Szwajcaria: lunch 6 os. = 150-200 CHF. Oszczędność: supermarket Coop lub Migros.'},
 {time:'13:30',cat:'landmark',title:'Via Serlas',desc:'Najwyżej położona luksusowa ulica Europy – Chanel, Céline, Louis Vuitton.',
 map:'Via Serlas St. Moritz',
-guide:'Kolebka turystyki zimowej! 2 Zimowe Olimpiady (1928, 1948). W 1864 r. hoteliarz Badrutt założył się z Brytyjczykami – pokochali zimę i zostali do Wielkanocy! St. Moritz ma własne zastrzeżone logo.'},
+guide:'Kolebka turystyki zimowej! 2 Zimowe Olimpiady (1928, 1948). W 1864 r. hoteliarz Badrutt założył się z Brytyjczykami – że pokochają zimę w Alpach – i miał rację: zostali do Wielkanocy! St. Moritz ma własne zastrzeżone logo.'},
 {time:'14:30',cat:'landmark',title:'Muzeum Segantiniego / spacer',desc:'Alpejski malarz-symbolista (1858-1899). 15 CHF. Lub Chesa Futura (Norman Foster).',
 map:'Segantini Museum St. Moritz'},
 {time:'15:00',cat:'landmark',title:'Krzywa Wieża St. Moritz',desc:'Pochylenie WIĘKSZE niż Krzywa Wieża w Pizie – 5,5° vs 3,97°!',
@@ -332,26 +348,35 @@ tip:'Pizza al taglio na dworcu Centrale – szybka kolacja na drogę.'}
 ]},
 // DAY 6
 {id:6,emoji:'🎨',name:'Mediolan – zwiedzanie',date:'Wtorek, 5 maja',city:'Mediolan',
-summary:'Luźne zwiedzanie · Ostatnia Wieczerza? · Castello · Galleria · Ostatnie Aperolki 🍊',
+summary:'Cenacolo · Muzeum Leonarda · Castello · Brera · Galleria · Ostatnie Aperolki 🍊',
 items:[
-{time:'9:30',cat:'food',title:'Dłuższe śniadanie ☕',desc:'Odpoczynek po alpejskiej ekspedycji. Żadnego pośpiechu!'},
-{time:'10:30',cat:'landmark',title:'🎨 Ostatnia Wieczerza (jeśli bilety!)',desc:'Cenacolo Vinciano, P.za Santa Maria delle Grazie 2. 40 osób / 15 min. 15 €, dzieci <18 gratis ale z rezerwacją!',
+{time:'9:30',cat:'food',title:'Dłuższe śniadanie ☕',desc:'Odpoczynek po alpejskiej ekspedycji. Żadnego pośpiechu! Wyjście ok. 10:15.'},
+{time:'10:45',cat:'landmark',title:'🎨 Ostatnia Wieczerza (Cenacolo Vinciano)',desc:'P.za Santa Maria delle Grazie 2. Wejście ściśle co 15 min, maks. 40 osób. 15 €, dzieci <18 gratis ale z rezerwacją! Przyjść 15 min wcześniej.',
 map:'Cenacolo Vinciano Milano',
 guide:'Leonardo malował 1495-1497 (3 lata!). Eksperymentalna technika – nie fresco! Łuszczy się od XVI w. Cudem przeżył bombardowanie 1943.\n\nLegenda o Judaszu: Leonardo szukał twarzy tak długo, że przeor narzekał. Leonardo: „Jeśli nie znajdę, użyję twojej." Przeor zamilkł.\n\nDla Zuzi: mimika 12 apostołów – każdy reaguje inaczej. Psychologiczna głębia!\n\nDla Emilki: malował TEN obraz 3 lata! Jakbyś zaczęła teraz i skończyła kiedy będziesz mieć 10 lat!',
 tip:'Bilety maj 2026: lastsupper.shop od ~poł. marca. Infolinia: +39 02 9280 0360. Alternatywa: GetYourGuide/Viator (30-50 €). W środy o 12:00 – extra release.'},
-{time:'11:00',cat:'landmark',title:'Alternatywa: San Maurizio al Monastero Maggiore',desc:'„Kaplica Sykstyńska Mediolanu" – freski ucznia Leonarda! Każdy cm pokryty! BEZPŁATNE!',
+{time:'11:05',cat:'landmark',title:'Santa Maria delle Grazie',desc:'Kościół tuż obok Cenacolo. Kopuła Bramantego, UNESCO. BEZPŁATNE! 5-10 min.',
+map:'Santa Maria delle Grazie Milano'},
+{time:'11:25',cat:'landmark',title:'San Maurizio al Monastero Maggiore',desc:'„Kaplica Sykstyńska Mediolanu" – freski ucznia Leonarda! Każdy cm pokryty! BEZPŁATNE!',
 map:'San Maurizio Monastero Maggiore Milano',
 guide:'Kościół podzielony na część publiczną i klasztorną. Kolory zaskakująco zachowane – intensywne błękity, złocenia, czerwienie.\n\nDla Emilki: jak wielka kolorowa książka – WSZYSTKIE ściany pomalowane! Znajdź anioły – jest ich mnóstwo!'},
-{time:'12:00',cat:'food',title:'Lunch',desc:'Vento di Sardegna (kuchnia sardyńska, z listy Ani) lub Gusto 17 przy Arco della Pace. 15-25 €/os.'},
-{time:'13:30',cat:'landmark',title:'Castello Sforzesco + Parco Sempione 🏰',desc:'Zamek-twierdza XV w. Wewnątrz: Pietà Rondanini Michała Anioła (ostatnie dzieło!). Za zamkiem: Parco Sempione (39 ha) + plac zabaw dla Emilki.',
+{time:'11:50',cat:'landmark',title:'🔬 Muzeum Nauki i Technologii Leonardo da Vinci',desc:'Via San Vittore 21. Największe muzeum nauki we Włoszech! Galeria Leonarda, okręt podwodny Toti, samoloty, interaktywne laby. 13 €/8 €. ~1,5h.',
+map:'Museo Scienza Leonardo Milano',
+guide:'Ponad 16 000 eksponatów! Galeria Leonarda – największa kolekcja modeli jego wynalazków. Okręt podwodny S-506 Enrico Toti – wchodzicie do środka!\n\nDla Emilki: PRAWDZIWY okręt podwodny, samoloty, pociągi i wynalazki Leonarda – HIT!',
+tip:'Wt–pt: 9:30–17:00. Interaktywne laboratoria – sprawdźcie dostępność na miejscu.'},
+{time:'13:30',cat:'food',title:'Lunch 🍝',desc:'Restauracje w okolicach Sant\'Ambrogio. Vento di Sardegna (kuchnia sardyńska, z listy Ani) lub Gusto 17. 15-25 €/os.'},
+{time:'14:30',cat:'landmark',title:'Castello Sforzesco + Parco Sempione 🏰',desc:'Zamek-twierdza XV w. Dziedziniec + Pietà Rondanini Michała Anioła (ostatnie dzieło!). Za zamkiem: Parco Sempione (39 ha) + plac zabaw dla Emilki. ~1h.',
 map:'Castello Sforzesco Milano',
-guide:'Francesco Sforza zbudował zamek 1450 r. Leonardo malował tu Sala delle Asse.\n\nPIETÀ RONDANINI – ostatnie dzieło Michała Anioła, pracował do 6 dni przed śmiercią (1564). Celowo „niedokończona".\n\nARCO DELLA PACE – wzorowany na paryskim. Rozpoczęty za Napoleona jako „Łuk Zwycięstwa", Austriacy zmienili na „Pokój"!\n\nDla Emilki: w tym zamku mieszkali prawdziwi książęta! Leonardo malował sufit jak las!'},
-{time:'15:00',cat:'landmark',title:'Brera',desc:'Artystyczne serce Mediolanu. Galerie, antykwariaty, boutique\'y. Opcjonalnie: Pinacoteca di Brera (Rafael, Mantegna, Caravaggio).',
+guide:'Francesco Sforza zbudował zamek 1450 r. Leonardo malował tu Sala delle Asse.\n\nPIETÀ RONDANINI – ostatnie, najporuszające dzieło Michała Anioła, pracował do 6 dni przed śmiercią (1564). Celowo „niedokończona".\n\nARCO DELLA PACE – wzorowany na paryskim. Rozpoczęty za Napoleona jako „Łuk Zwycięstwa", Austriacy zmienili na „Pokój"!\n\nDla Emilki: w tym zamku mieszkali prawdziwi książęta! Leonardo malował sufit jak las!'},
+{time:'15:40',cat:'landmark',title:'Brera',desc:'Artystyczne serce Mediolanu. Galerie, antykwariaty, boutique\'y. Opcjonalnie: Pinacoteca di Brera (Rafael, Mantegna, Caravaggio). ~40 min.',
 map:'Brera Milano'},
-{time:'16:30',cat:'landmark',title:'Galleria Vittorio Emanuele II ⭐',desc:'Najstarsza galeria handlowa Włoch (1867). Szklany kopulasty dach, mozaiki. „Salon Mediolanu".',
+{time:'16:20',cat:'landmark',title:'🤌 Piazza degli Affari – rzeźba L.O.V.E.',desc:'Kontrowersyjna rzeźba Maurizia Cattelana (11 m!) naprzeciwko giełdy. 5-10 min na zdjęcia.',
+map:'Piazza degli Affari Milano'},
+{time:'16:35',cat:'landmark',title:'Galleria Vittorio Emanuele II ⭐',desc:'Najstarsza galeria handlowa Włoch (1867). Szklany kopulasty dach, mozaiki. „Salon Mediolanu". Spacer + tradycja z bykiem + kawa. ~45 min.',
 map:'Galleria Vittorio Emanuele II Milano',
-guide:'Zaprojektowana przez Giuseppe Mengoniego (1867). Szklany dach z żelazną konstrukcją – rewolucyjny!\n\nTRADYCJA Z BYKIEM: mozaika z herbami 4 miast. Na byku turyńskim: piętą na „klejnotach" + 3 obroty = szczęście + gwarantowany powrót do Mediolanu! Byk wydrążony od turystów – dziura w podłodze!\n\nEmilka i Zuzia MUSZĄ to zrobić! 🐂'},
-{time:'17:00',cat:'landmark',title:'Bosco Verticale (opcjonalnie)',desc:'Dwa wieżowce z ~900 drzewami i 20 000 roślinami. Ikona architektury. Obok: Porta Nuova + park BAM.',
+guide:'Zaprojektowana przez Giuseppe Mengoniego z Bolonii, wybranego spośród wielu architektów w konkursie z 1863 r. Kamień węgielny położył osobiście król Wiktor Emanuel II w 1865 r. Plan to krzyż grecki: dłuższe ramię 196 m, krótsze 105,5 m, kopuła szklana 47 m – jedno z pierwszych zastosowań żelaza i szkła na taką skalę! Galeria łączy dwa najważniejsze place Mediolanu: Piazza del Duomo i Piazza della Scala (opera!).\n\nTRAGEDIA MENGONIEGO: 30 grudnia 1877 r., na kilka godzin przed wielką inauguracją, Mengoni spadł z wysokości kopuły i zginął na miejscu. Okoliczności tajemnicze – niektórzy podejrzewali samobójstwo. Nie doczekał otwarcia własnego arcydzieła.\n\nTRADYCJA Z BYKIEM: na skrzyżowaniu naw mozaika z herbami 4 miast Królestwa Włoch (Turyn, Florencja, Rzym, Mediolan). Na byku turyńskim: piętą na „klejnotach" + 3 obroty = szczęście! Początkowo kpina mediańczyków z rywala – Turynu. Dziś byk wydrążony od milionów turystów!\n\nCiekawostka: wszystkie szyldy w Gallerii muszą być złote na czarnym tle – regulacja miejska. Historyczne lokale: Biffi Caffè, Camparino (bar założony przez Campari!), kawiarnia Savini.\n\nDla Emilki: byk na podłodze – szukaj go! Trzeba stać piętą na brzuszku byka i kręcić się 3 razy! 🐂'},
+{time:'17:25',cat:'transport',title:'Metro → Navigli',desc:'Metro Duomo → M1/M2 → Porta Genova (~15 min) + pieszo 10 min.'},
+{time:'17:50',cat:'event',title:'Odpoczynek / Bosco Verticale (opcja)',desc:'Chwila wytchnienia. Opcjonalnie: wypad do Bosco Verticale – M2 Porta Genova → Garibaldi FS (10 min) + 5 min pieszo. Dwa wieżowce z ~900 drzewami! ~50 min łącznie.',
 map:'Bosco Verticale Milano'},
 {time:'18:30',cat:'food',title:'🍊 OSTATNIE APEROLKI W NAVIGLI!',desc:'Pożegnalny wieczór! Aperol Spritz + kolacja nad kanałem. Osteria da Fortunata, Berberè, Yguana Cafè.',
 tip:'Naviglio Grande o zachodzie (~20:00 w maju) – absolutnie magiczny! Złote światło, muzyka z barów. Pożegnalne zdjęcia! 📸🍊'}
@@ -453,6 +478,159 @@ const PLACES={
 ]
 };
 
+// ========== MAP DATA ==========
+const DAY_MAPS=[
+// Day 1
+{markers:[
+{lat:45.6739,lng:9.7042,label:'✈️ Lotnisko BGY'},
+{lat:45.6918,lng:9.6738,label:'🏠 Apartament'}
+]},
+// Day 2
+{markers:[
+{lat:45.6918,lng:9.6738,label:'🏠 Apartament'},
+{lat:45.7010,lng:9.6620,label:'🚋 Funikular'},
+{lat:45.7037,lng:9.6620,label:'⭐ Piazza Vecchia'},
+{lat:45.7035,lng:9.6617,label:'🔔 Campanone'},
+{lat:45.7030,lng:9.6625,label:'⛪ Bazylika+Kaplica'},
+{lat:45.7032,lng:9.6630,label:'⛪ Katedra'},
+{lat:45.7070,lng:9.6570,label:'🏔️ San Vigilio'},
+{lat:45.7050,lng:9.6585,label:'🍨 La Marianna'},
+{lat:45.6955,lng:9.6700,label:'🍹 Sentierone'}
+]},
+// Day 3
+{markers:[
+{lat:45.6918,lng:9.6738,label:'🏠 Apt. Bergamo'},
+{lat:45.6912,lng:9.6695,label:'🚂 Stacja Bergamo'},
+{lat:45.4861,lng:9.2044,label:'🚂 Milano Centrale'},
+{lat:45.4498,lng:9.1660,label:'🏠 Apt. Navigli'},
+{lat:45.4530,lng:9.1750,label:'⛪ Sant\'Eustorgio'},
+{lat:45.4590,lng:9.1810,label:'🏛️ Colonne'},
+{lat:45.4690,lng:9.1790,label:'🎻 Teatro Dal Verme'}
+]},
+// Day 4
+{markers:[
+{lat:45.4498,lng:9.1660,label:'🏠 Apt. Navigli'},
+{lat:45.4641,lng:9.1919,label:'⭐ Duomo'},
+{lat:45.4655,lng:9.1910,label:'🥟 Luini'},
+{lat:45.4660,lng:9.1899,label:'🏛️ Galleria'},
+{lat:45.4530,lng:9.1770,label:'🐰 Auditorium'}
+]},
+// Day 5
+{markers:[
+{lat:45.4861,lng:9.2044,label:'🚂 Milano Centrale'},
+{lat:46.2155,lng:10.1690,label:'🚂 Tirano'},
+{lat:46.4100,lng:10.0250,label:'⛰️ Prz. Bernina 2253m'},
+{lat:46.4908,lng:9.8355,label:'⭐ St. Moritz'}
+]},
+// Day 6
+{markers:[
+{lat:45.4498,lng:9.1660,label:'🏠 Apt. Navigli'},
+{lat:45.4660,lng:9.1710,label:'🎨 Cenacolo'},
+{lat:45.4668,lng:9.1710,label:'⛪ S.M. delle Grazie'},
+{lat:45.4655,lng:9.1725,label:'⛪ San Maurizio'},
+{lat:45.4630,lng:9.1700,label:'🔬 Muzeum Nauki'},
+{lat:45.4706,lng:9.1790,label:'🏰 Castello'},
+{lat:45.4720,lng:9.1880,label:'🎨 Brera'},
+{lat:45.4650,lng:9.1860,label:'🤌 L.O.V.E.'},
+{lat:45.4660,lng:9.1899,label:'⭐ Galleria'},
+{lat:45.4490,lng:9.1680,label:'🍹 Navigli'}
+]},
+// Day 7
+{markers:[
+{lat:45.4498,lng:9.1660,label:'🏠 Apt. Navigli'},
+{lat:45.4861,lng:9.2044,label:'🚂 Milano Centrale'},
+{lat:45.6739,lng:9.7042,label:'✈️ Lotnisko BGY'}
+]}
+];
+
+// ========== TRANSIT DATA ==========
+const DAY_TRANSITS=[
+// Day 1 (4 items → 3 gaps)
+[
+{i:'✈️',t:'Lot Gdańsk → Bergamo, ~2h 10min',d:'~2h'},
+{i:'🚕',t:'Taxi (10-15 min, ~25€) lub ATB Linia 1 (20 min)',d:'~15 min'},
+null
+],
+// Day 2 (15 items → 14 gaps)
+[
+{i:'🚶',t:'Viale Vittorio Emanuele II',d:'~15 min'},
+{i:'🚋',t:'Funikular 3 min + pieszo 3 min',d:'~6 min'},
+{i:'🚶',t:'Ten sam plac',d:'~1 min'},
+{i:'🚶',t:'Przez arkady Palazzo della Ragione',d:'~2 min'},
+{i:'🚶',t:'Piazza Duomo',d:'~1 min'},
+{i:'🚶',t:'Uliczki Città Alta',d:'~5 min'},
+{i:'🚶',t:'Do wejścia na mury',d:'~5 min'},
+{i:'🚶',t:'Wzdłuż Via alla Fara do stacji',d:'~10 min'},
+null,null,
+{i:'🚶',t:'Colle Aperto → stacja funikularu',d:'~2 min'},
+{i:'🚋',t:'Funikular w dół + Largo Porta Nuova',d:'~13 min'},
+{i:'🚶',t:'W okolicy Sentierone',d:'~5 min'},
+null
+],
+// Day 3 (10 items → 9 gaps)
+[
+{i:'🚶',t:'Do Accademia Carrara',d:'~15 min'},
+{i:'🚶',t:'Do stacji Bergamo (niedaleko)',d:'~5 min'},
+null,
+{i:'🚇',t:'M2 zielona → Porta Genova + pieszo Via Casale',d:'~22 min'},
+{i:'🚶',t:'Wzdłuż Naviglio Grande',d:'~10 min'},
+{i:'🚶',t:'Na północ: Sant\'Eustorgio → Colonne',d:'~20 min'},
+{i:'🚇',t:'M2 Porta Genova → M1 Cadorna + 8 min pieszo. Lub 25 min pieszo',d:'~16 min'},
+null,
+{i:'🚇',t:'M1 Cadorna → M2 Porta Genova + pieszo',d:'~18 min'}
+],
+// Day 4 (15 items → 14 gaps)
+[
+{i:'🚇',t:'M2 Porta Genova → M1 Duomo (przesiadka Cadorna). Lub Cadorna + Via Dante',d:'~28 min'},
+null,
+{i:'🚶',t:'Wejście od strony południowej katedry',d:'~3 min'},
+null,
+{i:'🚶',t:'Zejście schodami z tarasów',d:'~10 min'},
+{i:'🚶',t:'Schodami w dół (wewnątrz katedry)',d:'~5 min'},
+{i:'🚶',t:'Via Santa Radegonda 16, za Duomo',d:'~5 min'},
+{i:'🚶',t:'Piazza del Duomo → wejście do Gallerii',d:'~3 min'},
+{i:'🚇',t:'M1 Duomo → M2 Porta Genova + wzdłuż kanału. Lub 30 min pieszo',d:'~22 min'},
+{i:'🚶',t:'Largo Gustav Mahler',d:'~5 min'},
+null,null,
+{i:'🚶',t:'Pieszo wzdłuż kanału do Navigli',d:'~12 min'},
+null
+],
+// Day 5 (15 items → 14 gaps)
+[
+null,null,null,
+{i:'🚶',t:'Stacja Trenitalia → Kolej Retycka',d:'~2 min'},
+null,
+{i:'🚶',t:'Stacja tuż nad jeziorem',d:'~5 min'},
+{i:'🚶',t:'W górę do centrum',d:'~10 min'},
+{i:'🚶',t:'Via Somplaz',d:'~8 min'},
+{i:'🚶',t:'W okolicy',d:'~5 min'},
+null,
+{i:'🚶',t:'Do stacji St. Moritz',d:'~10 min'},
+null,null,null
+],
+// Day 6 (13 items → 12 gaps)
+[
+{i:'🚇',t:'M2 Porta Genova → Cadorna + 12 min Corso Magenta',d:'~32 min'},
+{i:'🚶',t:'Kościół tuż obok',d:'~1 min'},
+{i:'🚶',t:'Corso Magenta na wschód',d:'~5 min'},
+{i:'🚶',t:'Via San Vittore 21',d:'~8 min'},
+{i:'🚶',t:'Okolice Sant\'Ambrogio',d:'~5 min'},
+{i:'🚶',t:'Via Carducci → Foro Buonaparte → Piazza Castello',d:'~12 min'},
+{i:'🚶',t:'Via Pontaccio → Via Brera',d:'~10 min'},
+{i:'🚶',t:'Via Broletto → Via Santa Margherita',d:'~8 min'},
+{i:'🚶',t:'Via Santa Margherita → Piazza della Scala',d:'~5 min'},
+{i:'🚶',t:'Piazza del Duomo → metro',d:'~2 min'},
+null,null
+],
+// Day 7 (8 items → 7 gaps)
+[
+null,null,
+{i:'🚇',t:'M2 Porta Genova → Centrale, 6 przystanków',d:'~22 min'},
+{i:'🚶',t:'Piazza Luigi di Savoia (za dworcem)',d:'~5 min'},
+null,null,null
+]
+];
+
 // ========== RENDER ==========
 function gmaps(q){return 'https://www.google.com/maps/search/'+encodeURIComponent(q)}
 
@@ -467,14 +645,27 @@ c.appendChild(t);
 });
 }
 
+function gmapsDir(markers){
+var pts=markers.map(function(m){return m.lat+','+m.lng});
+return 'https://www.google.com/maps/dir/'+pts.join('/');
+}
+
 function renderDays(){
 const c=document.getElementById('dayContainer');
 DAYS.forEach((d,i)=>{
 let h='<div class="day-section'+(i===0?' active':'')+'" id="day-'+i+'">';
 h+='<div class="day-header"><h2>'+d.emoji+' Dzień '+d.id+' — '+d.name+'</h2>';
 h+='<div class="day-sub">'+d.date+' · '+d.city+'<br>'+d.summary+'</div></div>';
+if(DAY_MAPS[i]&&DAY_MAPS[i].markers.length){
+h+='<div class="day-map" id="map-day-'+i+'"></div>';
+h+='<a class="day-map-link" href="'+gmapsDir(DAY_MAPS[i].markers)+'" target="_blank" rel="noopener">Otwórz w Google Maps →</a>';
+}
 h+='<div class="timeline">';
 d.items.forEach((it,j)=>{
+if(j>0&&DAY_TRANSITS[i]&&DAY_TRANSITS[i][j-1]){
+const tr=DAY_TRANSITS[i][j-1];
+h+='<div class="transit"><span class="transit-icon">'+tr.i+'</span><span class="transit-text">'+tr.t+'</span><span class="transit-time">'+tr.d+'</span></div>';
+}
 const uid='g'+i+'_'+j;
 h+='<div class="tl-item"><div class="tl-dot '+it.cat+'"></div><div class="tl-card">';
 h+='<div class="tl-time">'+it.time+'</div>';
@@ -563,11 +754,46 @@ function catLabel(c){return{landmark:'Atrakcja',food:'Jedzenie',transport:'Trans
 function nl2br(s){return s.replace(/\n/g,'<br>')}
 function toggleGuide(id){document.getElementById(id).classList.toggle('open')}
 
+// ========== MAPS ==========
+const _maps={};
+function makeIcon(emoji){
+return L.divIcon({
+className:'map-marker-icon',
+html:'<div style="background:#fff;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:2px solid #2b6cb0;box-shadow:0 2px 4px rgba(0,0,0,.2);font-size:15px">'+emoji+'</div>',
+iconSize:[30,30],iconAnchor:[15,15],popupAnchor:[0,-15]
+});
+}
+function initMap(idx){
+if(_maps[idx])return;
+var el=document.getElementById('map-day-'+idx);
+if(!el||!DAY_MAPS[idx])return;
+var data=DAY_MAPS[idx];
+var map=L.map(el,{scrollWheelZoom:false});
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a>'
+}).addTo(map);
+var bounds=[];
+data.markers.forEach(function(m){
+var emoji=m.label.match(/^\S+/);
+emoji=emoji?emoji[0]:'📍';
+var icon=makeIcon(emoji);
+L.marker([m.lat,m.lng],{icon:icon}).addTo(map).bindPopup(m.label);
+bounds.push([m.lat,m.lng]);
+});
+if(bounds.length>1){
+L.polyline(bounds,{color:'#2b6cb0',weight:2,dashArray:'6,8',opacity:.6}).addTo(map);
+map.fitBounds(bounds,{padding:[30,30]});
+}else if(bounds.length===1){
+map.setView(bounds[0],14);
+}
+_maps[idx]=map;
+}
+
 function switchDay(i){
 document.querySelectorAll('.day-tab').forEach((t,j)=>t.classList.toggle('active',j===i));
 document.querySelectorAll('.day-section').forEach((s,j)=>s.classList.toggle('active',j===i));
-// scroll tab into view
 document.querySelectorAll('.day-tab')[i].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+setTimeout(function(){initMap(i)},150);
 }
 
 // Bottom nav
@@ -587,6 +813,7 @@ renderDays();
 renderMapGrid();
 renderPlaces();
 renderInfo();
+setTimeout(function(){initMap(0)},300);
 </script>
 </body>
 </html>
