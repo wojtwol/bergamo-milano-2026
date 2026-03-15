@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a365d">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Bergamo & Milano 2026</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--blue:#1a365d;--blue2:#2b6cb0;--white:#fff;--gray:#f7f8fa;--gray2:#e2e8f0;
+--text:#1a202c;--text2:#4a5568;--shadow:0 2px 8px rgba(0,0,0,.08);
+--radius:12px;--cat-landmark:#3182ce;--cat-food:#dd6b20;--cat-transport:#38a169;--cat-event:#e53e3e;
+--safe-b:env(safe-area-inset-bottom,0px);
+font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{background:var(--gray);color:var(--text);font-size:15px;line-height:1.5;
+padding-bottom:calc(64px + var(--safe-b));overflow-x:hidden}
+
+/* HEADER */
+.header{position:sticky;top:0;z-index:100;background:linear-gradient(135deg,var(--blue),var(--blue2));
+color:var(--white);padding:14px 16px 10px;text-align:center}
+.header h1{font-size:20px;font-weight:700;letter-spacing:.5px}
+.header p{font-size:12px;opacity:.85;margin-top:2px}
+
+/* DAY TABS (sticky) */
+.day-tabs-wrap{position:sticky;top:56px;z-index:90;background:var(--white);
+border-bottom:1px solid var(--gray2);overflow-x:auto;-webkit-overflow-scrolling:touch;
+scrollbar-width:none}
+.day-tabs-wrap::-webkit-scrollbar{display:none}
+.day-tabs{display:flex;gap:0;padding:0 8px;min-width:max-content}
+.day-tab{padding:10px 14px;font-size:13px;font-weight:600;white-space:nowrap;
+border-bottom:3px solid transparent;cursor:pointer;color:var(--text2);transition:.2s}
+.day-tab.active{color:var(--blue);border-bottom-color:var(--blue2)}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:200;
+background:var(--white);border-top:1px solid var(--gray2);
+display:flex;padding-bottom:var(--safe-b)}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;
+padding:8px 4px 6px;font-size:10px;font-weight:600;color:var(--text2);
+cursor:pointer;border:none;background:none;transition:.2s}
+.nav-btn.active{color:var(--blue2)}
+.nav-btn span.icon{font-size:20px;margin-bottom:2px}
+
+/* TAB CONTENT */
+.tab-content{display:none;padding:0 0 20px}
+.tab-content.active{display:block}
+
+/* DAY SECTION */
+.day-section{display:none;padding:12px}
+.day-section.active{display:block}
+.day-header{background:var(--white);border-radius:var(--radius);padding:16px;
+margin-bottom:16px;box-shadow:var(--shadow)}
+.day-header h2{font-size:18px;margin-bottom:4px}
+.day-header .day-sub{font-size:13px;color:var(--text2)}
+
+/* TIMELINE */
+.timeline{position:relative;padding-left:28px}
+.timeline::before{content:'';position:absolute;left:9px;top:8px;bottom:8px;
+width:2px;background:var(--gray2)}
+.tl-item{position:relative;margin-bottom:16px}
+.tl-dot{position:absolute;left:-28px;top:6px;width:18px;height:18px;
+border-radius:50%;border:3px solid var(--white);box-shadow:0 0 0 2px var(--gray2)}
+.tl-dot.landmark{background:var(--cat-landmark)}
+.tl-dot.food{background:var(--cat-food)}
+.tl-dot.transport{background:var(--cat-transport)}
+.tl-dot.event{background:var(--cat-event)}
+.tl-card{background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow)}
+.tl-time{font-size:12px;font-weight:700;color:var(--blue);margin-bottom:4px}
+.tl-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;
+border-radius:20px;margin-bottom:6px;text-transform:uppercase}
+.tl-badge.landmark{background:#bee3f8;color:#2b6cb0}
+.tl-badge.food{background:#feebc8;color:#c05621}
+.tl-badge.transport{background:#c6f6d5;color:#276749}
+.tl-badge.event{background:#fed7d7;color:#c53030}
+.tl-title{font-size:15px;font-weight:700;margin-bottom:4px}
+.tl-desc{font-size:13px;color:var(--text2);line-height:1.55}
+.tl-map{display:inline-block;margin-top:8px;font-size:12px;font-weight:600;
+color:var(--blue2);text-decoration:none}
+
+/* GUIDE / TIP */
+.guide-toggle{display:block;width:100%;text-align:left;background:#fffbeb;
+border:none;border-left:4px solid #f59e0b;border-radius:0 8px 8px 0;
+padding:10px 14px;margin-top:10px;font-size:13px;font-weight:600;
+cursor:pointer;color:#92400e}
+.guide-content{display:none;background:#fffbeb;border-left:4px solid #f59e0b;
+border-radius:0 0 8px 0;padding:10px 14px;font-size:13px;color:#78350f;line-height:1.6}
+.guide-content.open{display:block}
+.tip-box{background:#eff6ff;border-left:4px solid #3b82f6;border-radius:0 8px 8px 0;
+padding:10px 14px;margin-top:8px;font-size:13px;color:#1e40af;line-height:1.55}
+
+/* MAPS TAB */
+.map-big-btn{display:block;width:100%;padding:16px;background:linear-gradient(135deg,var(--blue),var(--blue2));
+color:var(--white);border:none;border-radius:var(--radius);font-size:16px;
+font-weight:700;text-align:center;text-decoration:none;margin:16px 0;cursor:pointer;box-shadow:var(--shadow)}
+.map-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 12px}
+.map-grid a{display:flex;align-items:center;gap:8px;padding:12px;background:var(--white);
+border-radius:var(--radius);text-decoration:none;color:var(--text);font-size:13px;
+font-weight:600;box-shadow:var(--shadow)}
+.map-grid a .mg-icon{font-size:22px}
+
+/* PLACES TAB */
+.places-group{padding:12px}
+.places-group h3{font-size:16px;margin:12px 0 8px;padding-left:4px}
+.place-item{display:flex;align-items:center;gap:10px;background:var(--white);
+border-radius:var(--radius);padding:12px;margin-bottom:8px;box-shadow:var(--shadow)}
+.place-item .pi-emoji{font-size:24px;flex-shrink:0}
+.place-item .pi-info{flex:1;min-width:0}
+.place-item .pi-name{font-size:14px;font-weight:600}
+.place-item .pi-desc{font-size:12px;color:var(--text2)}
+.place-item .pi-map{flex-shrink:0;font-size:20px;text-decoration:none;
+width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+background:var(--gray);border-radius:50%}
+
+/* INFO TAB */
+.info-section{padding:12px}
+.info-card{background:var(--white);border-radius:var(--radius);padding:16px;
+margin-bottom:12px;box-shadow:var(--shadow)}
+.info-card h3{font-size:16px;margin-bottom:10px}
+.info-card label{display:flex;align-items:flex-start;gap:10px;padding:6px 0;
+font-size:13px;cursor:pointer}
+.info-card label input[type=checkbox]{margin-top:3px;width:18px;height:18px;accent-color:var(--blue2)}
+.info-card p,.info-card li{font-size:13px;color:var(--text2);line-height:1.55}
+.info-card ul{list-style:none;padding:0}
+.info-card ul li{padding:4px 0}
+.info-card a{color:var(--blue2);text-decoration:none;word-break:break-all}
+.info-row{display:flex;justify-content:space-between;padding:4px 0;font-size:13px;border-bottom:1px solid var(--gray)}
+.info-row:last-child{border:none}
+
+/* PERSON CHIPS */
+.person-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.person-chip{background:var(--gray);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:600}
+
+@media(min-width:600px){
+.map-grid{grid-template-columns:1fr 1fr 1fr}
+.day-section{max-width:640px;margin:0 auto}
+.places-group,.info-section{max-width:640px;margin:0 auto}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+<h1>Bergamo & Milano 2026</h1>
+<p>30 kwietnia â€“ 6 maja &middot; 7 dni &middot; 6 uczestniczek</p>
+</div>
+
+<!-- TAB: PLAN -->
+<div class="tab-content active" id="tab-plan">
+<div class="day-tabs-wrap"><div class="day-tabs" id="dayTabs"></div></div>
+<div id="dayContainer"></div>
+</div>
+
+<!-- TAB: MAPA -->
+<div class="tab-content" id="tab-map">
+<div style="padding:12px">
+<a class="map-big-btn" href="https://maps.app.goo.gl/m2xjVuzzMiAVwCTU7?g_st=iw" target="_blank" rel="noopener">
+OtwĂłrz peĹ‚nÄ… mapÄ™ Ani (58 miejsc)
+</a>
+<h3 style="font-size:15px;margin:16px 0 10px;padding-left:4px">Szybka nawigacja</h3>
+<div class="map-grid" id="mapGrid"></div>
+</div>
+</div>
+
+<!-- TAB: MIEJSCA -->
+<div class="tab-content" id="tab-places">
+<div id="placesContainer"></div>
+</div>
+
+<!-- TAB: INFO -->
+<div class="tab-content" id="tab-info">
+<div id="infoContainer"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+<button class="nav-btn active" data-tab="tab-plan"><span class="icon">đź“‹</span>Plan</button>
+<button class="nav-btn" data-tab="tab-map"><span class="icon">đź—şď¸Ź</span>Mapa</button>
+<button class="nav-btn" data-tab="tab-places"><span class="icon">đź“Ť</span>Miejsca</button>
+<button class="nav-btn" data-tab="tab-info"><span class="icon">â„ąď¸Ź</span>Info</button>
+</nav>
+
+<script>
+// ========== DATA ==========
+const DAYS=[
+// DAY 1
+{id:1,emoji:'âśď¸Ź',name:'Przylot',date:'Czwartek, 30 kwietnia',city:'Bergamo',
+summary:'Przylot do Bergamo Â· Transfer do apartamentu',
+items:[
+{time:'21:30',cat:'transport',title:'Wylot z GdaĹ„ska',desc:'Lot FR3279, GdaĹ„sk (GDN) â†’ Mediolan/Bergamo (BGY). Czas lotu ok. 2h 10min. Ryanair â€“ pamiÄ™tajcie o limitach bagaĹĽu podrÄ™cznego.'},
+{time:'23:40',cat:'transport',title:'LÄ…dowanie w Bergamo (BGY)',desc:'Lotnisko Orio al Serio. OdbiĂłr bagaĹĽy, wyjĹ›cie do hali przylotĂłw. Od bramki do wyjĹ›cia ok. 10-15 minut.'},
+{time:'~0:00',cat:'transport',title:'Transfer do apartamentu',desc:'Via Vittorio Alfieri, 14, 24127 Bergamo (CittĂ  Bassa). Od lotniska ok. 5 km.',
+map:'Via Vittorio Alfieri 14 Bergamo Italy',
+guide:'OPCJA 1 â€“ AUTOBUS ATB Linia 1: kursuje z lotniska do centrum Bergamo aĹĽ do ok. 1:30 w nocy, co 20 min. Bilet ok. 2,60 â‚¬ (strefa C). MoĹĽna kupiÄ‡ w automacie na lotnisku lub w aplikacji ATB Mobile. Autobus jedzie do stacji kolejowej, skÄ…d do apartamentu ok. 10 min pieszo.\n\nOPCJA 2 â€“ TAXI: postoje przed halÄ… przylotĂłw. Koszt ok. 20-25 â‚¬, 10-15 min.',
+tip:'Przy przylocie o pĂłĹ‚nocy, z 7-latkÄ…, dwoma babciami i bagaĹĽami â€“ rekomendowane TAXI. Potrzebne 2 samochody. Koszt Ĺ‚Ä…czny: ok. 40-50 â‚¬ â€“ warto za komfort po podrĂłĹĽy.'},
+{time:'~0:30',cat:'landmark',title:'đźŹ  Apartament w Bergamo',desc:'Via Vittorio Alfieri, 14, 24127 Bergamo. Zakwaterowanie i odpoczynek. CittĂ  Bassa â€“ spokojna, nowsza czÄ™Ĺ›Ä‡ miasta, blisko dworca i przystankĂłw.',
+map:'Via Vittorio Alfieri 14 Bergamo'}
+]},
+// DAY 2
+{id:2,emoji:'đźŹ°',name:'Bergamo',date:'PiÄ…tek, 1 maja',city:'Bergamo',
+summary:'CaĹ‚odniowe zwiedzanie Â· CittĂ  Alta Â· Funikulary Â· Mury Weneckie',
+items:[
+{time:'8:30',cat:'food',title:'Ĺšniadanie w CittĂ  Bassa',desc:'Typowe wĹ‚oskie Ĺ›niadanie: cappuccino + cornetto (rogalik z kremem/dĹĽemem/czekoladÄ…). Koszt: ok. 3-4 â‚¬/os. Uwaga: 1 maja â€“ Festa del Lavoro â€“ niektĂłre sklepy zamkniÄ™te, ale bary i atrakcje dziaĹ‚ajÄ….'},
+{time:'9:45',cat:'transport',title:'Funikular do CittĂ  Alta đźš‹',desc:'Ze stacji przy Viale Vittorio Emanuele II (ok. 15 min pieszo). Jazda 3 min, ale spektakularna! PrzyjeĹĽdĹĽamy na Piazza Mercato delle Scarpe.',
+map:'Funicolare Bergamo CittĂ  Alta',
+guide:'Funikular dziaĹ‚a nieprzerwanie od 1887 roku! Dwa wagony poĹ‚Ä…czone linÄ… â€“ kiedy jeden jedzie w gĂłrÄ™, drugi zjeĹĽdĹĽa. Ostatnia renowacja 1987 r. Rocznie >2 mln pasaĹĽerĂłw!\n\nDla Emilki: ten wagonik jedzie po bardzo stromej gĂłrze â€“ jak kolejka gĂłrska, ale wolniej! I te ogromne mury majÄ… prawie 500 lat!',
+tip:'RozwaĹĽcie bilet 24h Tourist Ticket â€“ autobusy ATB + oba funikulary. Bilet jednorazowy: ok. 1,35 â‚¬ (strefa A), waĹĽny 75 min.'},
+{time:'10:15',cat:'landmark',title:'Piazza Vecchia â€“ serce CittĂ  Alta â­',desc:'GĹ‚Ăłwny plac gĂłrnego miasta. Le Corbusier nazwaĹ‚ go â€žnajpiÄ™kniejszym placem Europy"! Fontanna Contariniego, Palazzo della Ragione, Torre Civica, Palazzo Nuovo.',
+map:'Piazza Vecchia Bergamo',
+guide:'Palazzo della Ragione z XII w. â€“ najstarszy budynek administracji publicznej w Lombardii. Fontanna z 1780 r. od weneckiego podestĂ . Palazzo Nuovo â€“ projektant Scamozzi, budowa 1611-1928 (317 lat!).\n\nDla Emilki: kiedyĹ› lwy przy fontannie naprawdÄ™ â€žwypĹ‚ywaĹ‚y" wodÄ™! Palazzo della Ragione ma >800 lat â€“ nie byĹ‚o jeszcze Ameryki!\n\nDla Zuzi: idealny plac do zdjÄ™Ä‡ rano, kiedy Ĺ›wiatĹ‚o pada na fasadÄ™.'},
+{time:'11:00',cat:'landmark',title:'Campanone (Torre Civica) đź””',desc:'WieĹĽa 52,76 m z najwiÄ™kszym dzwonem Lombardii. WindÄ… lub 230 schodĂłw. WstÄ™p: ok. 7 â‚¬. Panorama na oba miasta i Alpy.',
+map:'Campanone Torre Civica Bergamo',
+guide:'KaĹĽdego wieczoru o 22:00 dzwon bije dokĹ‚adnie 100 razy â€“ tradycja wenecka, zamkniÄ™cie bram! Dzwon z 1656 r. waĹĽy >5 ton.\n\nDla Emilki: 100 razy kaĹĽdego wieczoru â€“ kiedyĹ› to znaczyĹ‚o zamkniÄ™cie bram, nikt nie mĂłgĹ‚ wejĹ›Ä‡ ani wyjĹ›Ä‡! Liczymy razem wieczorem?',
+tip:'Z EmilkÄ… i babciami â€“ windÄ…! Na szczycie taras widokowy z mapÄ… panoramicznÄ… alpejskich szczytĂłw.'},
+{time:'11:45',cat:'landmark',title:'Bazylika Santa Maria Maggiore + Kaplica Colleoniego â­',desc:'Piazza Duomo â€“ Bazylika (XII w.) i Kaplica Colleoniego (1472-1476). WejĹ›cie bezpĹ‚atne.',
+map:'Cappella Colleoni Bergamo',
+guide:'BAZYLIKA: z zewnÄ…trz surowa, romaĹ„ska. WewnÄ…trz â€“ barokowa eksplozja! ZĹ‚ocone sztukaterie, gobeliny XVI-XVII w., inkrustowane stalle z intarsjÄ… (obrazy z tysiÄ™cy kawaĹ‚kĂłw drewna!).\n\nKAPLICA COLLEONIEGO: Bartolomeo Colleoni (1395-1475), sĹ‚ynny condottiero. KazaĹ‚ zburzyÄ‡ czÄ™Ĺ›Ä‡ bazyliki na swojÄ… kaplicÄ™! Herb z trzema â€žkulami" â€“ dotkniÄ™cie prawÄ… rÄ™kÄ… = szczÄ™Ĺ›cie. Wypolerowane od setek lat!\n\nDla Zuzi i Emilki: koniecznie dotknijcie â€žkul" na herbie! W bazylice â€“ drewniane obrazki uĹ‚oĹĽone z tysiÄ™cy kawaĹ‚kĂłw, jak puzzle!'},
+{time:'12:30',cat:'landmark',title:'Katedra w Bergamo (Duomo)',desc:'Katedra pw. Ĺ›w. Aleksandra, patrona miasta. Neoklasyczna fasada z biaĹ‚ego marmuru. Obrazy Moroniego i Tiepola.',
+map:'Duomo di Bergamo'},
+{time:'13:00',cat:'food',title:'Obiad w CittĂ  Alta đźŤ˝ď¸Ź',desc:'Rekomendowane: Il Circolino (dawny klasztor i wiÄ™zienie!) lub Da Mimmo (kuchnia bergamaska). BudĹĽet: 15-25 â‚¬/os.',
+guide:'KUCHNIA BERGAMASKA â€“ Europejska Stolica Sera! 9 serĂłw PDO.\n\nCo sprĂłbowaÄ‡:\nâ€˘ CASONCELLI ALLA BERGAMASCA â€“ pieroĹĽki z miÄ™sem, rodzynkami i amaretti, z masĹ‚em szaĹ‚wiowym\nâ€˘ POLENTA TARAGNA â€“ z serem\nâ€˘ Deser: STRACCIATELLA â€“ wynaleziona tutaj!\n\nDla Emilki: casoncelli powinny zasmakowaÄ‡ (sĹ‚odko-sĹ‚one). Na deser stracciatella w La Marianna!'},
+{time:'14:30',cat:'landmark',title:'Spacer po Murach Weneckich đźŹ›ď¸Ź',desc:'Mury Weneckie â€“ UNESCO od 2017. 6 km murĂłw. Spacer 1-1,5 km z widokami na CittĂ  Bassa, dolinÄ™ i Alpy. ĹšcieĹĽka wygodna, zacieniona.',
+map:'Mura Venete Bergamo',
+guide:'Zbudowane 1561-1588 przez RepublikÄ™ WeneckÄ…. Bergamo â€“ ostatni bastion wenecki przed granicÄ… z Mediolanem. Paradoks: mury NIGDY nie zostaĹ‚y zaatakowane! Podczas budowy wyburzono ok. 250 domĂłw i kilka koĹ›cioĹ‚Ăłw.\n\nDla Emilki: te mury budowali 27 lat â€“ dĹ‚uĹĽej niĹĽ ty ĹĽyjesz razy cztery!'},
+{time:'15:30',cat:'landmark',title:'Funikular na San Vigilio đźŹ”ď¸Ź',desc:'Drugi funikular â€“ jeszcze wyĹĽej! Jazda 3 min. Najlepszy widok panoramiczny na Bergamo, dolinÄ™ PadaĹ„skÄ… i Alpy. Ruiny zamku z XIV w.',
+map:'San Vigilio Bergamo',
+guide:'Funikular od 27 sierpnia 1912 r. Zamek na szczycie (Castello di San Vigilio) z XIV w. â€“ straĹĽnicy kontrolowali stÄ…d wszystkie drogi.\n\nDla Emilki: na szczycie ruiny prawdziwego zamku â€“ kiedyĹ› stali tu rycerze!',
+tip:'Na San Vigilio jest bar z tarasem widokowym â€“ idealna kawa lub sok z widokiem na Alpy.'},
+{time:'16:30',cat:'landmark',title:'Spacer uliczkami CittĂ  Alta',desc:'Via Gombito i Via B. Colleoni â€“ sklepy, kawiarnie, lodziarnie, warsztaty. Opcjonalnie: Palazzo Moroni (barokowe freski).',
+map:'Via Bartolomeo Colleoni Bergamo'},
+{time:'17:00',cat:'food',title:'Lody stracciatella w La Marianna đźŤ¨',desc:'Tu w 1961 r. Enrico Panattoni wynalazĹ‚ stracciatellÄ™! ObowiÄ…zkowy przystanek!',
+map:'Gelateria La Marianna Bergamo Colle Aperto',
+guide:'Panattoni wlaĹ‚ gorÄ…cÄ… pĹ‚ynnÄ… czekoladÄ™ do krÄ™cÄ…cej siÄ™ bazy fior di latte. Czekolada stÄ™ĹĽaĹ‚a w odĹ‚amki. Patent nigdy nie zastrzeĹĽony!\n\nDla Emilki: te lody wymyĹ›lono TUTAJ! Pan Enrico wlaĹ‚ gorÄ…cÄ… czekoladÄ™ do zimnych lodĂłw i â€“ pach! â€“ czekolada popÄ™kaĹ‚a na milion kawaĹ‚eczkĂłw!'},
+{time:'17:30',cat:'transport',title:'Zjazd funikularem do CittĂ  Bassa',desc:'PowrĂłt funikularem do dolnej czÄ™Ĺ›ci miasta.'},
+{time:'18:00',cat:'food',title:'Aperitivo w Sentierone',desc:'Elegancka aleja â€“ â€žChamps-Ă‰lysĂ©es Bergamo". Aperol Spritz (6-8 â‚¬) z oliwkami i orzechami.',
+guide:'Aperitivo to jedna z najwaĹĽniejszych tradycji. 18:00-20:00 = â€žsacred hour". W wielu barach za cenÄ™ drinka dostajecie przekÄ…ski. Dzieci mogÄ… dostaÄ‡ bezalkoholowego Spritza.'},
+{time:'19:30',cat:'food',title:'Kolacja w CittĂ  Bassa',desc:'Restauracje w okolicach dworca â€“ luĹşniejsza atmosfera, niĹĽsze ceny. Szukajcie â€žcucina casalinga" (kuchnia domowa).'},
+{time:'22:00',cat:'event',title:'đź”” 100 uderzeĹ„ Campanone!',desc:'Otwieramy okna i sĹ‚uchamy! Tradycja wenecka â€“ zamkniÄ™cie bram. Nawet z CittĂ  Bassa doskonale sĹ‚ychaÄ‡. Magiczny moment!'}
+]},
+// DAY 3
+{id:3,emoji:'đźš‚',name:'Bergamo â†’ Mediolan',date:'Sobota, 2 maja',city:'Bergamo â†’ Milano',
+summary:'Transfer do Mediolanu Â· Colonne di San Lorenzo Â· Koncert w Teatro Dal Verme',
+items:[
+{time:'8:00',cat:'food',title:'Ĺšniadanie i pakowanie',desc:'Ostatnie Ĺ›niadanie w Bergamo. Wykwaterowanie do 10:00.'},
+{time:'9:00',cat:'landmark',title:'Accademia Carrara (opcjonalnie)',desc:'Najstarsza galeria sztuki we WĹ‚oszech (1796). Botticelli, Rafael, Tycjan. ~10 â‚¬, dzieci <18 gratis. Na szybko 30-45 min.',
+map:'Accademia Carrara Bergamo',
+guide:'ZaĹ‚oĹĽona przez hrabiego Giacomo Carrara. Highlighty: â€žMadonna z DzieciÄ…tkiem" Botticellego, portrety Moroniego â€“ â€žfotografa XVI w.".'},
+{time:'10:30',cat:'transport',title:'đźš‚ PociÄ…g Bergamo â†’ Milano Centrale',desc:'Trenord RegioExpress RE2, ~50 min, ~5,50-6 â‚¬. BezpoĹ›rednio, co godzinÄ™. SKASOWAÄ† bilet!',
+tip:'Po prawej stronie â€“ Ĺ‚adniejsze widoki na dolinÄ™ Lombardii.'},
+{time:'11:30',cat:'transport',title:'Milano Centrale',desc:'Monumentalny dworzec art dĂ©co z 1931 r.',
+map:'Milano Centrale station',
+guide:'Otwarty 1931 r. na polecenie Mussoliniego. Hala: 72 m szer., 36 m wys.! Budowa trwaĹ‚a 25 lat. >320 tys. pasaĹĽerĂłw dziennie.'},
+{time:'12:00',cat:'transport',title:'Metro do Navigli + zakwaterowanie',desc:'M2 (zielona) â†’ Porta Genova (~15 min), 10 min pieszo do 3 Via Casale. Bilet: 2,20 â‚¬, dzieci <14 gratis.',
+map:'Via Casale 3 Milano Italy',
+guide:'NAVIGLI â€“ system kanaĹ‚Ăłw od Ĺ›redniowiecza. Naviglio Grande (50 km) Ĺ‚Ä…czyĹ‚ Mediolan z Lago Maggiore. Marmur na Duomo transportowano tymi kanaĹ‚ami! DziĹ› kolorowe kamienice, bary, galerie.',
+tip:'Bilet 24h (7,60 â‚¬) lub 48h (13,80 â‚¬) jeĹ›li intensywne zwiedzanie.'},
+{time:'12:30',cat:'food',title:'Lunch w Navigli đźŤť',desc:'Risotto alla milanese, cotoletta alla milanese, pizza. Z listy Ani: Osteria da Fortunata, BerberĂ¨, La Magolfa.'},
+{time:'13:30',cat:'landmark',title:'Navigli â†’ Colonne di San Lorenzo',desc:'Trasa piesza ~2 km: Basilica di Sant\'Eustorgio (IV w.) â†’ Colonne (16 kolumn z II/III w.!) â†’ Parco delle Basiliche.',
+map:'Colonne di San Lorenzo Milano',
+guide:'COLONNE DI SAN LORENZO â€“ 16 korynckich kolumn, tu od ~2000 lat! Pierwotnie w rzymskiej Ĺ›wiÄ…tyni/Ĺ‚aĹşni. Jedyna pamiÄ…tka staroĹĽytnego Mediolanum.\n\nDla Emilki: te kolumny majÄ… prawie 2000 lat â€“ starsze niĹĽ cokolwiek, co widziaĹ‚aĹ›!'},
+{time:'16:30',cat:'event',title:'Teatro Dal Verme',desc:'Via S. Giovanni sul Muro, 2. PrzyjĹ›cie ~30 min wczeĹ›niej.',
+map:'Teatro Dal Verme Milano'},
+{time:'17:00',cat:'event',title:'đźŽ» Koncert: Beethoven â€“ Concerto per violino',desc:'Cadario (skrzypce), Honeck (dyrygent). Koncert skrzypcowy D-dur op. 61. Do 18:40.',
+guide:'Teatro Dal Verme (1872) â€“ tu 21 maja 1892 r. Ĺ›wiatowa premiera â€žPajacĂłw" Leoncavalla! Zniszczony w bombardowaniach 1943, odbudowany 1975.'},
+{time:'19:00',cat:'food',title:'Kolacja w Navigli đźŚ™',desc:'PowrĂłt metrem. Aperitivo nad kanaĹ‚em â€“ Aperol Spritz + przekÄ…ski 7-10 â‚¬. Pierwszy Aperol Spritz w Mediolanie! đźŤŠ',
+tip:'Navigli wieczorem â€“ magiczne! KanaĹ‚ podĹ›wietlony, barowe ogrĂłdki na nabrzeĹĽu.'}
+]},
+// DAY 4
+{id:4,emoji:'â›Ş',name:'Mediolan â€“ Duomo',date:'Niedziela, 3 maja',city:'Mediolan',
+summary:'Duomo di Milano â­ Â· Tarasy dachowe Â· Bugs Bunny at the Symphony đź°đźŽµ',
+items:[
+{time:'8:30',cat:'food',title:'Ĺšniadanie w Navigli',desc:'Croissant z pistacjowym kremem, cappuccino â€“ dolce vita!'},
+{time:'9:30',cat:'transport',title:'Metro do Duomo',desc:'M2â†’M1 (~15 min) lub M2 do Cadorna + spacer Via Dante.'},
+{time:'10:00',cat:'landmark',title:'Piazza del Duomo',desc:'Fasada katedry + wejĹ›cie do Gallerii V. Emanuele II.',
+map:'Piazza del Duomo Milano',
+guide:'DUOMO DI MILANO â€“ 3. najwiÄ™ksza katedra katolicka Ĺ›wiata. Budowa od 1386, fasada ukoĹ„czona 1813 na rozkaz Napoleona. >3400 posÄ…gĂłw, 135 wieĹĽyczek, 96 gargulcĂłw. BiaĹ‚o-rĂłĹĽowy marmur z Candoglii â€“ transportowany kanaĹ‚ami!\n\nNa szczycie (108,5 m) â€“ zĹ‚ota Madonnina (1774), symbol Mediolanu.\n\nDla Emilki: >3400 posÄ…ĹĽkĂłw! Gargulce jak smoki! Madonnina na 108 m â€“ jakby 30 EmilkĂłw!\n\nâš ď¸Ź DRESS CODE: zakryte ramiona i kolana! Dotyczy teĹĽ Zuzi!'},
+{time:'10:30',cat:'event',title:'Kontrola bezpieczeĹ„stwa',desc:'Kontrola w stylu lotniskowym przy wejĹ›ciu.'},
+{time:'11:00',cat:'landmark',title:'â­ TARASY DACHOWE Duomo',desc:'WindÄ… na pierwszy poziom, potem 50-80 schodĂłw. Panorama 360Â° â€“ Alpy i Apeniny! Gargulce, >2000 posÄ…gĂłw, Madonnina z bliska.',
+guide:'Dach to ~8000 mÂ˛ â€“ jak boisko piĹ‚karskie! >2000 posÄ…gĂłw, kaĹĽdy inny. Marmur zmienia kolor z biaĹ‚ego na rĂłĹĽowy o zachodzie â€“ katedra â€žrĂłĹĽowieje"!\n\nDla Zuzi: jedno z niewielu miejsc, gdzie chodzisz po dachu gotyckiej katedry! Instagram gold!',
+tip:'Bilety rodzinne z windÄ… ~25-30 â‚¬ (2+1-2 dzieci). Rezerwujcie na duomomilano.it! W niedzielÄ™ rezerwacja obowiÄ…zkowa!'},
+{time:'11:45',cat:'landmark',title:'WnÄ™trze katedry',desc:'5 naw, 52 kolumny, witraĹĽe XV-XVI w. PosÄ…g Ĺ›w. BartĹ‚omieja â€žbez skĂłry". Meridiana (zegar sĹ‚oneczny). ĹšwiÄ™ty GwĂłĹşdĹş.',
+guide:'MERIDIANA (1786) â€“ mosiÄ™ĹĽny pas ze znakami zodiaku na podĹ‚odze. SĹ‚oĹ„ce przez otwĂłr na 24 m wskazuje miesiÄ…c!\n\nâ€žĹšWIÄTY GWĂ“ĹąDĹą" â€“ relikwiarz na 45 m, opuszczany raz w roku â€žnivolÄ…" â€“ urzÄ…dzeniem Leonarda da Vinci!\n\nPOSÄ„G ĹšW. BARTĹOMIEJA â€“ niesie wĹ‚asnÄ… skĂłrÄ™ jak szal. SĹ‚uĹĽyĹ‚ studentom medycyny!'},
+{time:'12:30',cat:'landmark',title:'Krypta Ĺ›w. Karola Boromeusza',desc:'KrysztaĹ‚owy sarkofag z relikwiami patrona Mediolanu.',
+guide:'Karol Boromeusz (1538-1584) â€“ podczas dĹĽumy 1576 osobiĹ›cie odwiedzaĹ‚ chorych, sprzedaĹ‚ meble koĹ›cielne. Kanonizowany 26 lat po Ĺ›mierci.\n\nDla Emilki: ten Ĺ›wiÄ™ty byĹ‚ tak odwaĹĽny, ĹĽe kiedy wszyscy uciekali, on zostaĹ‚ i pomagaĹ‚.'},
+{time:'13:00',cat:'landmark',title:'Strefa archeologiczna (podziemia)',desc:'Baptysterium Ĺ›w. Jana (IV w.), Bazylika Ĺ›w. Tekli. Tu wg tradycji Ĺ›w. AmbroĹĽy ochrzciĹ‚ Ĺ›w. Augustyna w 387 r.!'},
+{time:'13:30',cat:'food',title:'Szybki lunch',desc:'Panzerotti Luini (z listy Ani!) â€“ smaĹĽone calzone, 3-5 â‚¬/szt. Lub Spontini â€“ kultowa pizza al taglio.',
+map:'Panzerotti Luini Milano'},
+{time:'15:00',cat:'event',title:'Auditorium di Milano',desc:'Largo Gustav Mahler. PrzyjĹ›Ä‡ 30 min wczeĹ›niej!',
+map:'Auditorium di Milano Largo Gustav Mahler'},
+{time:'15:30',cat:'event',title:'đź° BUGS BUNNY AT THE SYMPHONY!',desc:'Orchestra Sinfonica di Milano. Koncert symfoniczny z projekcjami Looney Tunes! Do 17:40.',
+guide:'Hit nie tylko dla Emilki! Orkiestra na ĹĽywo: Rossini, Strauss, Wagner, Liszt, Czajkowski. TwĂłrcy Looney Tunes przemycali edukacjÄ™ muzycznÄ….\n\nDla Emilki: Bugs Bunny dyryguje orkiestrÄ…, Daffy Duck taĹ„czy balet!\n\nDla Zuzi: aranĹĽacje Carla Stallinga â€“ jedne z najlepszych w historii muzyki filmowej.'},
+{time:'18:00',cat:'transport',title:'PowrĂłt do Navigli',desc:'Metro do Porta Genova.'},
+{time:'19:00',cat:'food',title:'Kolacja w Navigli đźŤ·',desc:'WieczĂłr w ulubionych knajpkach nad kanaĹ‚em.'}
+]},
+// DAY 5
+{id:5,emoji:'đźŹ”ď¸Ź',name:'St. Moritz',date:'PoniedziaĹ‚ek, 4 maja',city:'Milano â†’ St. Moritz â†’ Milano',
+summary:'Bernina Express đźš‚ (UNESCO) Â· St. Moritz Â· Lodowce i Alpy',
+items:[
+{time:'5:30',cat:'transport',title:'Pobudka!',desc:'CiepĹ‚e ubrania â€“ St. Moritz 1775 m, w maju ok. 5-15Â°C!'},
+{time:'6:00',cat:'transport',title:'Metro â†’ Milano Centrale',desc:'Ĺšniadanie na dworcu lub prowiant na 2,5-godzinny pociÄ…g.',
+tip:'Bary na dworcu otwarte od rana.'},
+{time:'6:20',cat:'transport',title:'đźš‚ Milano â†’ Tirano',desc:'Trenitalia, ~2,5 godz. Malownicza Valtellina â€“ dolina Addy, alpejskie szczyty, tarasowe winnice.'},
+{time:'8:52',cat:'transport',title:'Przyjazd Tirano',desc:'Przesiadka na Bernina Express â€“ stacja Kolei Retyckiej 2 min pieszo.',
+guide:'Tirano â€“ urokliwe miasteczko na granicy wĹ‚osko-szwajcarskiej. Tu zaczyna siÄ™ legendarna trasa Bernina!'},
+{time:'9:41',cat:'transport',title:'đźš‚ BERNINA EXPRESS â­ (UNESCO!)',desc:'2h 30min. Z 429 m (Tirano) na 2253 m (przeĹ‚Ä™cz Bernina). 55 tuneli, 196 mostĂłw na 61 km!',
+guide:'Najspektakularniejsze momenty:\n\n1. WIADUKT SPIRALNY BRUSIO â€“ jedyny na Ĺ›wiecie! Tory krÄ™cÄ… siÄ™ w 360Â°!\n2. LAGO DI POSCHIAVO â€“ alpejskie jezioro po prawej\n3. ALPE GRĂśM (2091 m) â€“ widok na lodowiec PalĂĽ\n4. PRZEĹÄCZ BERNINA (2253 m) â€“ jeziora mogÄ… byÄ‡ zamarzniÄ™te! Tu europejski dziaĹ‚ wodny\n5. LODOWIEC MORTERATSCH â€“ jeden z najdĹ‚uĹĽszych w Alpach Wschodnich\n6. ZJAZD DO ENGADYNY â€“ serpentyny z widokiem na dolinÄ™\n\nDla Emilki: PRAWDZIWE lodowce i most, na ktĂłrym pociÄ…g krÄ™ci siÄ™ w kĂłĹ‚ko!',
+tip:'LEWA strona jadÄ…c do St. Moritz! Przy powrocie â€“ PRAWA.'},
+{time:'12:11',cat:'landmark',title:'Przyjazd St. Moritz đźŹ”ď¸Ź',desc:'Stacja nad jeziorem. W maju jezioro moĹĽe byÄ‡ czÄ™Ĺ›ciowo pokryte lodem!',
+map:'St. Moritz Switzerland'},
+{time:'12:15',cat:'food',title:'Jezioro + lunch',desc:'4 km Ĺ›cieĹĽka wokĂłĹ‚ Lake St. Moritz. Fondue serowe = must-try! Alternatywa: rĂ¶sti, Engadiner Nusstorte.',
+map:'Lake St. Moritz',
+tip:'Szwajcaria: lunch 6 os. = 150-200 CHF. OszczÄ™dnoĹ›Ä‡: supermarket Coop lub Migros.'},
+{time:'13:30',cat:'landmark',title:'Via Serlas',desc:'NajwyĹĽej poĹ‚oĹĽona luksusowa ulica Europy â€“ Chanel, CĂ©line, Louis Vuitton.',
+map:'Via Serlas St. Moritz',
+guide:'Kolebka turystyki zimowej! 2 Zimowe Olimpiady (1928, 1948). W 1864 r. hoteliarz Badrutt zaĹ‚oĹĽyĹ‚ siÄ™ z Brytyjczykami â€“ pokochali zimÄ™ i zostali do Wielkanocy! St. Moritz ma wĹ‚asne zastrzeĹĽone logo.'},
+{time:'14:30',cat:'landmark',title:'Muzeum Segantiniego / spacer',desc:'Alpejski malarz-symbolista (1858-1899). 15 CHF. Lub Chesa Futura (Norman Foster).',
+map:'Segantini Museum St. Moritz'},
+{time:'15:00',cat:'landmark',title:'Krzywa WieĹĽa St. Moritz',desc:'Pochylenie WIÄKSZE niĹĽ Krzywa WieĹĽa w Pizie â€“ 5,5Â° vs 3,97Â°!',
+map:'Schiefer Turm St. Moritz',
+guide:'Dla Zuzi: bardziej pochylona niĹĽ Piza â€“ a prawie nikt nie wie! Idealny Instagramowy post z porĂłwnaniem.'},
+{time:'16:00',cat:'food',title:'Kawa + Engadiner Nusstorte â•',desc:'GorÄ…ca czekolada (inna liga!) + tradycyjne ciasto orzechowe z karmelem.'},
+{time:'16:48',cat:'transport',title:'đźš‚ Odjazd z St. Moritz',desc:'Przy powrocie: PRAWA strona wagonu!'},
+{time:'19:02',cat:'transport',title:'Tirano â†’ przesiadka',desc:''},
+{time:'20:08',cat:'transport',title:'PociÄ…g Tirano â†’ Milano Centrale',desc:''},
+{time:'22:40',cat:'transport',title:'Przyjazd Milano Centrale',desc:'Metro â†’ apartament w Navigli.',
+tip:'Pizza al taglio na dworcu Centrale â€“ szybka kolacja na drogÄ™.'}
+]},
+// DAY 6
+{id:6,emoji:'đźŽ¨',name:'Mediolan â€“ zwiedzanie',date:'Wtorek, 5 maja',city:'Mediolan',
+summary:'LuĹşne zwiedzanie Â· Ostatnia Wieczerza? Â· Castello Â· Galleria Â· Ostatnie Aperolki đźŤŠ',
+items:[
+{time:'9:30',cat:'food',title:'DĹ‚uĹĽsze Ĺ›niadanie â•',desc:'Odpoczynek po alpejskiej ekspedycji. Ĺ»adnego poĹ›piechu!'},
+{time:'10:30',cat:'landmark',title:'đźŽ¨ Ostatnia Wieczerza (jeĹ›li bilety!)',desc:'Cenacolo Vinciano, P.za Santa Maria delle Grazie 2. 40 osĂłb / 15 min. 15 â‚¬, dzieci <18 gratis ale z rezerwacjÄ…!',
+map:'Cenacolo Vinciano Milano',
+guide:'Leonardo malowaĹ‚ 1495-1497 (3 lata!). Eksperymentalna technika â€“ nie fresco! Ĺuszczy siÄ™ od XVI w. Cudem przeĹĽyĹ‚ bombardowanie 1943.\n\nLegenda o Judaszu: Leonardo szukaĹ‚ twarzy tak dĹ‚ugo, ĹĽe przeor narzekaĹ‚. Leonardo: â€žJeĹ›li nie znajdÄ™, uĹĽyjÄ™ twojej." Przeor zamilkĹ‚.\n\nDla Zuzi: mimika 12 apostoĹ‚Ăłw â€“ kaĹĽdy reaguje inaczej. Psychologiczna gĹ‚Ä™bia!\n\nDla Emilki: malowaĹ‚ TEN obraz 3 lata! JakbyĹ› zaczÄ™Ĺ‚a teraz i skoĹ„czyĹ‚a kiedy bÄ™dziesz mieÄ‡ 10 lat!',
+tip:'Bilety maj 2026: lastsupper.shop od ~poĹ‚. marca. Infolinia: +39 02 9280 0360. Alternatywa: GetYourGuide/Viator (30-50 â‚¬). W Ĺ›rody o 12:00 â€“ extra release.'},
+{time:'11:00',cat:'landmark',title:'Alternatywa: San Maurizio al Monastero Maggiore',desc:'â€žKaplica SykstyĹ„ska Mediolanu" â€“ freski ucznia Leonarda! KaĹĽdy cm pokryty! BEZPĹATNE!',
+map:'San Maurizio Monastero Maggiore Milano',
+guide:'KoĹ›ciĂłĹ‚ podzielony na czÄ™Ĺ›Ä‡ publicznÄ… i klasztornÄ…. Kolory zaskakujÄ…co zachowane â€“ intensywne bĹ‚Ä™kity, zĹ‚ocenia, czerwienie.\n\nDla Emilki: jak wielka kolorowa ksiÄ…ĹĽka â€“ WSZYSTKIE Ĺ›ciany pomalowane! ZnajdĹş anioĹ‚y â€“ jest ich mnĂłstwo!'},
+{time:'12:00',cat:'food',title:'Lunch',desc:'Vento di Sardegna (kuchnia sardyĹ„ska, z listy Ani) lub Gusto 17 przy Arco della Pace. 15-25 â‚¬/os.'},
+{time:'13:30',cat:'landmark',title:'Castello Sforzesco + Parco Sempione đźŹ°',desc:'Zamek-twierdza XV w. WewnÄ…trz: PietĂ  Rondanini MichaĹ‚a AnioĹ‚a (ostatnie dzieĹ‚o!). Za zamkiem: Parco Sempione (39 ha) + plac zabaw dla Emilki.',
+map:'Castello Sforzesco Milano',
+guide:'Francesco Sforza zbudowaĹ‚ zamek 1450 r. Leonardo malowaĹ‚ tu Sala delle Asse.\n\nPIETĂ€ RONDANINI â€“ ostatnie dzieĹ‚o MichaĹ‚a AnioĹ‚a, pracowaĹ‚ do 6 dni przed Ĺ›mierciÄ… (1564). Celowo â€žniedokoĹ„czona".\n\nARCO DELLA PACE â€“ wzorowany na paryskim. RozpoczÄ™ty za Napoleona jako â€žĹuk ZwyciÄ™stwa", Austriacy zmienili na â€žPokĂłj"!\n\nDla Emilki: w tym zamku mieszkali prawdziwi ksiÄ…ĹĽÄ™ta! Leonardo malowaĹ‚ sufit jak las!'},
+{time:'15:00',cat:'landmark',title:'Brera',desc:'Artystyczne serce Mediolanu. Galerie, antykwariaty, boutique\'y. Opcjonalnie: Pinacoteca di Brera (Rafael, Mantegna, Caravaggio).',
+map:'Brera Milano'},
+{time:'16:30',cat:'landmark',title:'Galleria Vittorio Emanuele II â­',desc:'Najstarsza galeria handlowa WĹ‚och (1867). Szklany kopulasty dach, mozaiki. â€žSalon Mediolanu".',
+map:'Galleria Vittorio Emanuele II Milano',
+guide:'Zaprojektowana przez Giuseppe Mengoniego (1867). Szklany dach z ĹĽelaznÄ… konstrukcjÄ… â€“ rewolucyjny!\n\nTRADYCJA Z BYKIEM: mozaika z herbami 4 miast. Na byku turyĹ„skim: piÄ™tÄ… na â€žklejnotach" + 3 obroty = szczÄ™Ĺ›cie + gwarantowany powrĂłt do Mediolanu! Byk wydrÄ…ĹĽony od turystĂłw â€“ dziura w podĹ‚odze!\n\nEmilka i Zuzia MUSZÄ„ to zrobiÄ‡! đź‚'},
+{time:'17:00',cat:'landmark',title:'Bosco Verticale (opcjonalnie)',desc:'Dwa wieĹĽowce z ~900 drzewami i 20 000 roĹ›linami. Ikona architektury. Obok: Porta Nuova + park BAM.',
+map:'Bosco Verticale Milano'},
+{time:'18:30',cat:'food',title:'đźŤŠ OSTATNIE APEROLKI W NAVIGLI!',desc:'PoĹĽegnalny wieczĂłr! Aperol Spritz + kolacja nad kanaĹ‚em. Osteria da Fortunata, BerberĂ¨, Yguana CafĂ¨.',
+tip:'Naviglio Grande o zachodzie (~20:00 w maju) â€“ absolutnie magiczny! ZĹ‚ote Ĺ›wiatĹ‚o, muzyka z barĂłw. PoĹĽegnalne zdjÄ™cia! đź“¸đźŤŠ'}
+]},
+// DAY 7
+{id:7,emoji:'âśď¸Ź',name:'PowrĂłt',date:'Ĺšroda, 6 maja',city:'Mediolan â†’ GdaĹ„sk',
+summary:'Ostatni poranek Â· Transfer do Bergamo Â· Wylot',
+items:[
+{time:'8:00',cat:'food',title:'Ostatnie Ĺ›niadanie â•',desc:'Ostatnie cappuccino i cornetto we WĹ‚oszech!'},
+{time:'9:00',cat:'food',title:'Ostatnie zakupy / gelato',desc:'Marchesi 1824 (legendarna cukiernia), Spun Tiramisu (na wynos). PamiÄ…tki, oliwa, pasta, ser.'},
+{time:'10:00',cat:'transport',title:'Pakowanie i wykwaterowanie',desc:'Do 11:00.'},
+{time:'10:45',cat:'transport',title:'Metro do Milano Centrale',desc:''},
+{time:'11:15',cat:'transport',title:'đźšŚ Autobus â†’ Bergamo Airport',desc:'Terravision / Orio Shuttle z Piazza Luigi di Savoia (za dworcem). Co 20-30 min, ~50-60 min, ~10 â‚¬/os.',
+tip:'Bilety online wczeĹ›niej! NIE kupujcie w kiosku na dworcu. Alternatywa: pociÄ…g do Bergamo (~50 min, ~6 â‚¬) + ATB linia 1 (15 min, ~2,60 â‚¬).'},
+{time:'12:15',cat:'transport',title:'Lotnisko BGY',desc:'Z zapasem na odprawÄ™ i kontrolÄ™.'},
+{time:'14:55',cat:'transport',title:'âśď¸Ź Wylot! FR9095',desc:'BGY â†’ GDN'},
+{time:'17:00',cat:'event',title:'LÄ…dowanie w GdaĹ„sku đź‡µđź‡±',desc:'Arrivederci, Italia! Buon viaggio a tutte! đź‡®đź‡ąâť¤ď¸Źâśď¸Ź'}
+]}
+];
+
+const MAP_LINKS=[
+{icon:'â›Ş',label:'Duomo di Milano',q:'Duomo di Milano'},
+{icon:'đźŹ›ď¸Ź',label:'Galleria V. Emanuele',q:'Galleria Vittorio Emanuele II Milano'},
+{icon:'đźŹ°',label:'Castello Sforzesco',q:'Castello Sforzesco Milano'},
+{icon:'đźŽ¨',label:'Ostatnia Wieczerza',q:'Cenacolo Vinciano Milano'},
+{icon:'đźŹ›ď¸Ź',label:'Colonne di San Lorenzo',q:'Colonne di San Lorenzo Milano'},
+{icon:'đźŚł',label:'Parco Sempione',q:'Parco Sempione Milano'},
+{icon:'đźŚł',label:'Bosco Verticale',q:'Bosco Verticale Milano'},
+{icon:'đźŽ­',label:'La Scala',q:'Teatro alla Scala Milano'},
+{icon:'đźŽ»',label:'Teatro Dal Verme',q:'Teatro Dal Verme Milano'},
+{icon:'đźŽµ',label:'Auditorium Milano',q:'Auditorium di Milano'},
+{icon:'đźŤť',label:'Navigli',q:'Navigli Milano'},
+{icon:'đźš‚',label:'Milano Centrale',q:'Milano Centrale station'},
+{icon:'đźŹ°',label:'CittĂ  Alta Bergamo',q:'Citta Alta Bergamo'},
+{icon:'đźš‹',label:'Funikular Bergamo',q:'Funicolare Bergamo Citta Alta'},
+{icon:'đźŤ¨',label:'La Marianna',q:'Gelateria La Marianna Bergamo'},
+{icon:'đźŹ”ď¸Ź',label:'St. Moritz',q:'St. Moritz Switzerland'},
+{icon:'đźĄź',label:'Panzerotti Luini',q:'Panzerotti Luini Milano'},
+{icon:'đźŤ•',label:'Spontini',q:'Spontini Milano'}
+];
+
+const PLACES={
+'Atrakcje i Zabytki':[
+{e:'â›Ş',n:'Katedra w Mediolanie (Duomo)',d:'3. najwiÄ™ksza katedra Ĺ›wiata',q:'Duomo di Milano'},
+{e:'đźŹ›ď¸Ź',n:'Piazza del Duomo',d:'GĹ‚Ăłwny plac',q:'Piazza del Duomo Milano'},
+{e:'đźŹ›ď¸Ź',n:'Galleria Vittorio Emanuele II',d:'Galeria handlowa 1867',q:'Galleria Vittorio Emanuele II'},
+{e:'đźŽ­',n:'La Scala',d:'Opera',q:'Teatro alla Scala Milano'},
+{e:'đźŹ°',n:'Castello Sforzesco',d:'Zamek XV w.',q:'Castello Sforzesco Milano'},
+{e:'đźŚł',n:'Parco Sempione + Arco della Pace',d:'Park + Ĺuk Pokoju',q:'Parco Sempione Milano'},
+{e:'đźŽ¨',n:'Cenacolo Vinciano',d:'Ostatnia Wieczerza Leonarda',q:'Cenacolo Vinciano Milano'},
+{e:'â›Ş',n:'Santa Maria delle Grazie',d:'KoĹ›ciĂłĹ‚ obok Cenacolo',q:'Santa Maria delle Grazie Milano'},
+{e:'â›Ş',n:'San Maurizio al Monastero Maggiore',d:'â€žKaplica SykstyĹ„ska Mediolanu"',q:'San Maurizio Monastero Maggiore Milano'},
+{e:'đźŽ¨',n:'Museo del Novecento',d:'Sztuka XX w.',q:'Museo del Novecento Milano'},
+{e:'đź“š',n:'Biblioteka AmbrozjaĹ„ska',d:'Muzeum sztuki',q:'Pinacoteca Ambrosiana Milano'},
+{e:'đźŽ¨',n:'Fondazione Prada',d:'Sztuka wspĂłĹ‚czesna',q:'Fondazione Prada Milano'},
+{e:'đźŹ›ď¸Ź',n:'Villa Necchi Campiglio',d:'Art dĂ©co villa',q:'Villa Necchi Campiglio Milano'},
+{e:'đźŚł',n:'Bosco Verticale',d:'Pionowy Las',q:'Bosco Verticale Milano'},
+{e:'đźŚł',n:'BAM â€“ Biblioteca degli Alberi',d:'Park Porta Nuova',q:'BAM Milano'},
+{e:'đźŹ˘',n:'Torre Velasca',d:'Brutalistyczny wieĹĽowiec',q:'Torre Velasca Milano'},
+{e:'đź—Ľ',n:'Branca Tower',d:'WieĹĽa widokowa',q:'Torre Branca Milano'},
+{e:'đź’€',n:'San Bernardino alle Ossa',d:'Ossuarium',q:'San Bernardino alle Ossa Milano'},
+{e:'đź¤Ś',n:'P.za degli Affari (L.O.V.E.)',d:'RzeĹşba â€žpalec" Cattelana',q:'Piazza degli Affari Milano'},
+{e:'đź”¬',n:'Muzeum Nauki Leonardo da Vinci',d:'NajwiÄ™ksze we WĹ‚oszech',q:'Museo Scienza Leonardo Milano'},
+{e:'đź‘—',n:'Via Monte Napoleone',d:'Luksusowa moda',q:'Via Monte Napoleone Milano'},
+{e:'đźŽ¨',n:'Brera',d:'Dzielnica artystyczna',q:'Brera Milano'},
+{e:'đźŹ®',n:'Chinatown',d:'Via Paolo Sarpi',q:'Chinatown Milano'},
+{e:'đźŚ',n:'Via Lincoln',d:'Kolorowe kamienice',q:'Via Lincoln Milano'},
+{e:'đźŹ°',n:'Castello Pozzi',d:'Muzeum',q:'Castello Pozzi Milano'},
+{e:'đź¸',n:'Chiostro delle Rane',d:'KruĹĽganek z ĹĽabami',q:'Chiostro delle Rane Milano'}
+],
+'Restauracje i Jedzenie':[
+{e:'đźŤť',n:'Osteria da Fortunata â€“ Navigli',d:'Kuchnia rzymska, 20-30â‚¬',q:'Osteria da Fortunata Navigli Milano'},
+{e:'đźŤť',n:'Osteria da Fortunata â€“ Moscova',d:'Kuchnia rzymska',q:'Osteria da Fortunata Moscova Milano'},
+{e:'đźŤ·',n:'Enoteca Vini E Spiriti',d:'Restauracja + enoteka',q:'Enoteca Vini E Spiriti Milano'},
+{e:'đźŤť',n:'Vento di Sardegna',d:'Kuchnia sardyĹ„ska',q:'Vento di Sardegna Milano'},
+{e:'đźŤ˝ď¸Ź',n:'Gusto 17 â€“ Arco della Pace',d:'Restauracja',q:'Gusto 17 Milano'},
+{e:'đź§',n:'Marchesi 1824',d:'Legendarna cukiernia',q:'Marchesi 1824 Milano'},
+{e:'đźŤ˝ď¸Ź',n:'Savini Milano 1867',d:'Klasyka w Gallerii',q:'Savini Milano 1867'},
+{e:'đźĄź',n:'Panzerotti Luini',d:'SmaĹĽone calzone',q:'Panzerotti Luini Milano'},
+{e:'đźŤ°',n:'Spun Tiramisu',d:'Tiramisu na wynos',q:'Spun Tiramisu Milano'},
+{e:'đźŤ•',n:'Spontini',d:'Kultowa pizza mediolaĹ„ska',q:'Spontini Milano'},
+{e:'đźŤ¨',n:'Ciacco',d:'Lody rzemieĹ›lnicze',q:'Ciacco Milano gelato'},
+{e:'đźŤ•',n:'Pizzeria Positano â€“ Colonne',d:'Przy kolumnach, 10-20â‚¬',q:'Pizzeria Positano Colonne Milano'},
+{e:'đźŤ•',n:'Materia Pizzeria â€“ Centro',d:'20-30â‚¬',q:'Materia Pizzeria Milano'},
+{e:'đźŤ•',n:'BerberĂ¨ Navigli',d:'Pizza 10-20â‚¬',q:'Berbere Navigli Milano'},
+{e:'đźŤ˝ď¸Ź',n:'La Magolfa â€“ Navigli',d:'Nad kanaĹ‚em',q:'La Magolfa Milano'},
+{e:'đźŤ•',n:'Woodstock 3',d:'Pizzeria Navigli',q:'Woodstock 3 Milano'},
+{e:'đźŤ”',n:'Street Smash Burgers',d:'Burgery',q:'Street Smash Burgers Milano'},
+{e:'đźŤą',n:'Yguana CafĂ¨',d:'Bar Navigli',q:'Yguana Cafe Milano'},
+{e:'â•',n:'Starbucks Reserve Roastery',d:'W byĹ‚ej poczcie',q:'Starbucks Reserve Roastery Milano'},
+{e:'đźŤ•',n:'Pizza e Mozzarella',d:'Pizza',q:'Pizza e Mozzarella Milano'}
+],
+'Wydarzenia':[
+{e:'đźŽ»',n:'Teatro Dal Verme',d:'Koncert 2.05, 17:00',q:'Teatro Dal Verme Milano'},
+{e:'đźŽµ',n:'Auditorium di Milano',d:'Bugs Bunny 3.05, 15:30',q:'Auditorium di Milano'}
+],
+'Zakupy':[
+{e:'đź’„',n:'Kiko Milano (z grawerem)',d:'Kosmetyki',q:'Kiko Milano'}
+]
+};
+
+// ========== RENDER ==========
+function gmaps(q){return 'https://www.google.com/maps/search/'+encodeURIComponent(q)}
+
+function renderDayTabs(){
+const c=document.getElementById('dayTabs');
+DAYS.forEach((d,i)=>{
+const t=document.createElement('div');
+t.className='day-tab'+(i===0?' active':'');
+t.textContent=d.emoji+' DzieĹ„ '+d.id;
+t.onclick=()=>switchDay(i);
+c.appendChild(t);
+});
+}
+
+function renderDays(){
+const c=document.getElementById('dayContainer');
+DAYS.forEach((d,i)=>{
+let h='<div class="day-section'+(i===0?' active':'')+'" id="day-'+i+'">';
+h+='<div class="day-header"><h2>'+d.emoji+' DzieĹ„ '+d.id+' â€” '+d.name+'</h2>';
+h+='<div class="day-sub">'+d.date+' Â· '+d.city+'<br>'+d.summary+'</div></div>';
+h+='<div class="timeline">';
+d.items.forEach((it,j)=>{
+const uid='g'+i+'_'+j;
+h+='<div class="tl-item"><div class="tl-dot '+it.cat+'"></div><div class="tl-card">';
+h+='<div class="tl-time">'+it.time+'</div>';
+h+='<span class="tl-badge '+it.cat+'">'+catLabel(it.cat)+'</span>';
+h+='<div class="tl-title">'+it.title+'</div>';
+if(it.desc)h+='<div class="tl-desc">'+it.desc+'</div>';
+if(it.map)h+='<a class="tl-map" href="'+gmaps(it.map)+'" target="_blank" rel="noopener">đź“Ť mapa</a>';
+if(it.guide)h+='<button class="guide-toggle" onclick="toggleGuide(\''+uid+'\')">đźŽ¤ OpowieĹ›Ä‡ przewodnika</button><div class="guide-content" id="'+uid+'">'+nl2br(it.guide)+'</div>';
+if(it.tip)h+='<div class="tip-box">đź’ˇ '+nl2br(it.tip)+'</div>';
+h+='</div></div>';
+});
+h+='</div></div>';
+c.insertAdjacentHTML('beforeend',h);
+});
+}
+
+function renderMapGrid(){
+const c=document.getElementById('mapGrid');
+MAP_LINKS.forEach(m=>{
+c.insertAdjacentHTML('beforeend','<a href="'+gmaps(m.q)+'" target="_blank" rel="noopener"><span class="mg-icon">'+m.icon+'</span>'+m.label+'</a>');
+});
+}
+
+function renderPlaces(){
+const c=document.getElementById('placesContainer');
+for(const[group,items]of Object.entries(PLACES)){
+let h='<div class="places-group"><h3>'+group+' ('+items.length+')</h3>';
+items.forEach(p=>{
+h+='<div class="place-item"><span class="pi-emoji">'+p.e+'</span><div class="pi-info"><div class="pi-name">'+p.n+'</div><div class="pi-desc">'+p.d+'</div></div><a class="pi-map" href="'+gmaps(p.q)+'" target="_blank" rel="noopener">đź“Ť</a></div>';
+});
+h+='</div>';
+c.insertAdjacentHTML('beforeend',h);
+}
+}
+
+function renderInfo(){
+const c=document.getElementById('infoContainer');
+let h='<div class="info-section">';
+// Checklist
+h+='<div class="info-card"><h3>âś… Checklist</h3>';
+const checks=['Bilety Duomo+tarasy (duomomilano.it) â€“ Lift Pass, 3.05, slot 11:00',
+'Bilety Ostatnia Wieczerza (lastsupper.shop) â€“ od poĹ‚. marca 2026',
+'PociÄ…g Milanoâ€“Tirano 6:20 (trenitalia.it)',
+'Bernina Express 9:41+16:48 (rhb.ch)',
+'PociÄ…g Tiranoâ€“Milano 20:08',
+'Autobus Mediolanâ†’BGY (dzieĹ„ wylotu, online!)',
+'Aplikacje: ATB Mobile, ATM Milano, Trenord, Trenitalia',
+'Dress code Duomo: zakryte ramiona i kolana!'];
+checks.forEach((ch,i)=>{h+='<label><input type="checkbox" id="chk'+i+'"><span>'+ch+'</span></label>';});
+h+='</div>';
+// Adresy
+h+='<div class="info-card"><h3>đźŹ  Adresy</h3><ul>';
+h+='<li><strong>Bergamo (30.04â€“02.05):</strong> <a href="'+gmaps('Via Vittorio Alfieri 14 Bergamo Italy')+'" target="_blank">Via V. Alfieri 14, 24127 Bergamo</a></li>';
+h+='<li><strong>Mediolan (02.05â€“06.05):</strong> <a href="'+gmaps('Via Casale 3 Milano Italy')+'" target="_blank">3 Via Casale, Navigli, 20144 Milano</a></li>';
+h+='<li><strong>Teatro Dal Verme:</strong> <a href="'+gmaps('Teatro Dal Verme Milano')+'" target="_blank">Via S. Giovanni sul Muro 2</a></li>';
+h+='<li><strong>Auditorium:</strong> <a href="'+gmaps('Auditorium di Milano')+'" target="_blank">Largo Gustav Mahler</a></li>';
+h+='<li><strong>Cenacolo:</strong> <a href="'+gmaps('Cenacolo Vinciano Milano')+'" target="_blank">P.za Santa Maria delle Grazie 2</a></li>';
+h+='</ul></div>';
+// Transport
+h+='<div class="info-card"><h3>đźš‡ Transport Mediolan</h3><ul>';
+h+='<li>Metro ATM: 5 linii. Bilet: 2,20 â‚¬ (90 min)</li>';
+h+='<li>24h: 7,60 â‚¬ Â· 48h: 13,80 â‚¬</li>';
+h+='<li>Dzieci do 14 lat: gratis (maks. 2/dorosĹ‚ego)</li>';
+h+='<li>Bilety: automaty lub aplikacja ATM Milano</li>';
+h+='</ul></div>';
+// BudĹĽet
+h+='<div class="info-card"><h3>đź’° BudĹĽet orientacyjny (~na osobÄ™)</h3>';
+const budget=[['Transport Bergamo','~15 â‚¬'],['PociÄ…g BGâ€“MI','~6 â‚¬'],['Metro 3 dni','~25 â‚¬'],
+['Duomo+tarasy','~25 â‚¬'],['St. Moritz (pociÄ…gi)','~60 â‚¬'],['Bus na BGY','~10 â‚¬'],
+['Jedzenie (7 dni)','~280 â‚¬'],['RAZEM','350â€“500 â‚¬']];
+budget.forEach(b=>{h+='<div class="info-row"><span>'+b[0]+'</span><strong>'+b[1]+'</strong></div>';});
+h+='</div>';
+// Uczestniczki
+h+='<div class="info-card"><h3>đź‘©â€Ťđź‘§â€Ťđź‘¦ Uczestniczki</h3><div class="person-chips">';
+['Ania (44)','Zuzia (16)','Justyna (37)','Emilka (7)','Teresa (68)','Lucyna (65)'].forEach(p=>{
+h+='<span class="person-chip">'+p+'</span>';});
+h+='</div></div>';
+// Mapa link
+h+='<div class="info-card"><h3>đź—şď¸Ź Mapa</h3><a href="https://maps.app.goo.gl/m2xjVuzzMiAVwCTU7?g_st=iw" target="_blank" rel="noopener" style="color:var(--blue2);font-weight:600;font-size:14px">OtwĂłrz mapÄ™ Ani (58 miejsc) â†’</a></div>';
+h+='</div>';
+c.innerHTML=h;
+}
+
+// ========== HELPERS ==========
+function catLabel(c){return{landmark:'Atrakcja',food:'Jedzenie',transport:'Transport',event:'Wydarzenie'}[c]||c}
+function nl2br(s){return s.replace(/\n/g,'<br>')}
+function toggleGuide(id){document.getElementById(id).classList.toggle('open')}
+
+function switchDay(i){
+document.querySelectorAll('.day-tab').forEach((t,j)=>t.classList.toggle('active',j===i));
+document.querySelectorAll('.day-section').forEach((s,j)=>s.classList.toggle('active',j===i));
+// scroll tab into view
+document.querySelectorAll('.day-tab')[i].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+}
+
+// Bottom nav
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+btn.addEventListener('click',()=>{
+document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+btn.classList.add('active');
+document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+document.getElementById(btn.dataset.tab).classList.add('active');
+window.scrollTo({top:0,behavior:'smooth'});
+});
+});
+
+// INIT
+renderDayTabs();
+renderDays();
+renderMapGrid();
+renderPlaces();
+renderInfo();
+</script>
+</body>
+</html>
