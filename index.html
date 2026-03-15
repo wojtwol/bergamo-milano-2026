@@ -43,7 +43,7 @@ border-bottom:3px solid transparent;cursor:pointer;color:var(--text2);transition
 background:var(--white);border-top:1px solid var(--gray2);
 display:flex;padding-bottom:var(--safe-b)}
 .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;
-padding:8px 4px 6px;font-size:10px;font-weight:600;color:var(--text2);
+padding:8px 2px 6px;font-size:9px;font-weight:600;color:var(--text2);
 cursor:pointer;border:none;background:none;transition:.2s}
 .nav-btn.active{color:var(--blue2)}
 .nav-btn span.icon{font-size:20px;margin-bottom:2px}
@@ -147,6 +147,47 @@ font-size:13px;cursor:pointer}
 .transit-time{margin-left:auto;font-weight:600;color:#666;white-space:nowrap}
 .map-marker-icon{display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1}
 
+/* TICKETS TAB */
+.ticket-day-group{padding:12px}
+.ticket-day-title{font-size:16px;font-weight:700;margin:12px 0 8px;padding-left:4px}
+.ticket-card{background:var(--white);border-radius:var(--radius);border-left:4px solid var(--blue);
+padding:12px 16px;margin:8px 0;box-shadow:var(--shadow);cursor:pointer}
+.ticket-card.today{border-left-color:var(--cat-event);box-shadow:0 0 0 2px rgba(229,62,62,.2)}
+.ticket-header{display:flex;justify-content:space-between;align-items:center}
+.ticket-icon{font-size:24px;flex-shrink:0}
+.ticket-title{font-weight:700;font-size:15px;flex:1;margin:0 10px}
+.ticket-time{font-size:13px;color:var(--text2);white-space:nowrap}
+.ticket-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.ticket-details{font-size:12px;color:#888;margin-top:6px;line-height:1.6}
+.ticket-warning{background:#fff5f5;border:1px solid #feb2b2;border-radius:6px;
+padding:6px 10px;font-size:11px;color:#c53030;margin-top:6px}
+.ticket-seats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+gap:4px;margin-top:6px}
+.seat-badge{background:#ebf8ff;border-radius:4px;padding:3px 8px;font-size:11px}
+.ticket-body{display:none;margin-top:10px;border-top:1px solid var(--gray2);padding-top:10px}
+.ticket-body.open{display:block}
+.ticket-img-wrap{margin:8px 0;text-align:center}
+.ticket-img-wrap img{width:100%;border-radius:8px;cursor:pointer}
+.ticket-zoom-btn{display:inline-block;padding:6px 14px;font-size:12px;font-weight:600;
+color:var(--blue2);background:var(--gray);border:none;border-radius:20px;cursor:pointer;margin-top:6px}
+.ticket-person-select{width:100%;padding:8px;border:1px solid var(--gray2);border-radius:8px;
+font-size:13px;margin-bottom:8px;background:var(--white)}
+.ticket-summary{padding:12px}
+.ticket-summary-card{background:var(--white);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.ticket-summary-card h3{font-size:16px;margin-bottom:10px}
+.today-badge{display:inline-block;background:var(--cat-event);color:#fff;font-size:9px;
+font-weight:700;padding:2px 6px;border-radius:10px;margin-left:6px;vertical-align:middle}
+.tl-ticket-link{display:inline-block;margin-left:6px;font-size:12px;text-decoration:none;
+background:#ebf8ff;padding:2px 8px;border-radius:10px;cursor:pointer;color:var(--blue)}
+
+/* FULLSCREEN VIEWER */
+.fs-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;
+background:rgba(0,0,0,.92);flex-direction:column;align-items:center;justify-content:center}
+.fs-overlay.open{display:flex}
+.fs-close{position:absolute;top:16px;right:16px;font-size:28px;color:#fff;background:none;
+border:none;cursor:pointer;z-index:10000;width:40px;height:40px}
+.fs-img{max-width:95vw;max-height:90vh;object-fit:contain;border-radius:8px}
+
 @media(min-width:600px){
 .map-grid{grid-template-columns:1fr 1fr 1fr}
 .day-section{max-width:640px;margin:0 auto}
@@ -183,19 +224,32 @@ Otwórz pełną mapę Ani (58 miejsc)
 <div id="placesContainer"></div>
 </div>
 
+<!-- TAB: BILETY -->
+<div class="tab-content" id="tab-tickets">
+<div id="ticketsContainer"></div>
+</div>
+
 <!-- TAB: INFO -->
 <div class="tab-content" id="tab-info">
 <div id="infoContainer"></div>
+</div>
+
+<!-- FULLSCREEN VIEWER -->
+<div class="fs-overlay" id="fsOverlay" onclick="closeFullscreen()">
+<button class="fs-close" onclick="closeFullscreen()">✕</button>
+<img class="fs-img" id="fsImg" src="" alt="Bilet">
 </div>
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
 <button class="nav-btn active" data-tab="tab-plan"><span class="icon">📋</span>Plan</button>
 <button class="nav-btn" data-tab="tab-map"><span class="icon">🗺️</span>Mapa</button>
+<button class="nav-btn" data-tab="tab-tickets"><span class="icon">🎫</span>Bilety</button>
 <button class="nav-btn" data-tab="tab-places"><span class="icon">📍</span>Miejsca</button>
 <button class="nav-btn" data-tab="tab-info"><span class="icon">ℹ️</span>Info</button>
 </nav>
 
+<script src="tickets_data.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 // ========== DATA ==========
@@ -673,6 +727,7 @@ h+='<span class="tl-badge '+it.cat+'">'+catLabel(it.cat)+'</span>';
 h+='<div class="tl-title">'+it.title+'</div>';
 if(it.desc)h+='<div class="tl-desc">'+it.desc+'</div>';
 if(it.map)h+='<a class="tl-map" href="'+gmaps(it.map)+'" target="_blank" rel="noopener">📍 mapa</a>';
+if(TICKET_DAY_LINKS[(i+1)+'-'+j])h+='<span class="tl-ticket-link" onclick="goToTicket(\''+TICKET_DAY_LINKS[(i+1)+'-'+j]+'\')">🎫 bilet</span>';
 if(it.guide)h+='<button class="guide-toggle" onclick="toggleGuide(\''+uid+'\')">🎤 Opowieść przewodnika</button><div class="guide-content" id="'+uid+'">'+nl2br(it.guide)+'</div>';
 if(it.tip)h+='<div class="tip-box">💡 '+nl2br(it.tip)+'</div>';
 h+='</div></div>';
@@ -807,12 +862,235 @@ window.scrollTo({top:0,behavior:'smooth'});
 });
 });
 
+// ========== TICKETS ==========
+const TICKET_EVENTS=[
+{day:3,date:'02.05.2026',icon:'🎻',title:'Koncert: Beethoven — Concerto per violino',
+subtitle:'Cadario, Honeck — I Pomeriggi Musicali',venue:'Teatro Dal Verme',
+address:'Via San Giovanni sul Muro 2, Milano',time:'17:00',
+tickets:[
+{seat:'Fila 10, Miejsce 6',type:'Ridotto under 30',price:'12,50 €',section:'Balconata DX',imgKey:'koncert-1'},
+{seat:'Fila 10, Miejsce 7',type:'Intero',price:'14,50 €',section:'Balconata DX',imgKey:'koncert-2'},
+{seat:'Fila 11, Miejsce 7',type:'Ridotto over 60',price:'12,50 €',section:'Balconata DX',imgKey:'koncert-3'},
+{seat:'Fila 11, Miejsce 6',type:'Ridotto over 60',price:'12,50 €',section:'Balconata DX',imgKey:'koncert-4'}
+],total:'56,16 €',warn:'Kupiono 4 bilety (Ania+Zuzia+Teresa+Lucyna). Vis Limitata = ograniczona widoczność.'},
+
+{day:4,date:'03.05.2026',icon:'⛪',title:'Duomo di Milano — Combo Stairs',
+subtitle:'Tarasy (schody) + Katedra + Muzeum',venue:'Duomo di Milano',
+address:'Piazza Duomo 14/A, Milano',time:'11:00',gate:'GATE 1 ORANGE',
+tickets:[
+{code:'SVFD52KQR84DBBW6',type:'Ragazzi 6-18',price:'11,00 €',res:'OFD3579002',imgKey:'duomo1-1'},
+{code:'SVFDW46Q75KPBL66',type:'Full price',price:'22,00 €',res:'OFD3579002',imgKey:'duomo1-2'},
+{code:'SVFD52KQR8QP5J9E',type:'Full price',price:'22,00 €',res:'OFD3579002',imgKey:'duomo1-3'},
+{code:'SVFD8ELZJKXYDR6B',type:'Ragazzi 6-18',price:'11,00 €',res:'OFD3578993',imgKey:'duomo2-1'},
+{code:'SVFDR3QY269D4D8X',type:'Full price',price:'22,00 €',res:'OFD3578993',imgKey:'duomo2-2'},
+{code:'SVFDW46Q79D69ZRJ',type:'Full price',price:'22,00 €',res:'OFD3578993',imgKey:'duomo2-3'}
+],total:'110,00 €',warn:'DRESS CODE: zakryte ramiona i kolana! Godz. 11:00 = wejście na TARASY. Bilet ważny 2 dni.'},
+
+{day:4,date:'03.05.2026',icon:'🐰',title:'Bugs Bunny at the Symphony',
+subtitle:'Orchestra Sinfonica di Milano',venue:'Auditorium di Milano',
+address:'Largo Gustav Mahler 1, Milano',time:'15:30',
+tickets:[
+{seat:'PLATEA F14/19',type:'Intero',price:'24,00 €',imgKey:'bugs-4'},
+{seat:'PLATEA F14/20',type:'Under 35',price:'12,00 €',imgKey:'bugs-3'},
+{seat:'PLATEA F14/21',type:'Under 35',price:'12,00 €',imgKey:'bugs-2'},
+{seat:'PLATEA F14/22',type:'Intero',price:'24,00 €',imgKey:'bugs-1'}
+],total:'72,00 €',warn:'⚠️ Kupiono 4 bilety (nie 6!). Teresa i Lucyna nie mają biletów.'},
+
+{day:5,date:'04.05.2026',icon:'🚂',title:'Trenord: Milano → Tirano',
+subtitle:'Regionale 2812, 2ª Classe',venue:'Milano Centrale → Tirano',
+time:'06:20 → 08:52',
+tickets:[
+{code:'2755726416',price:'12,50 €',imgKey:'trenord1-1'},
+{code:'2755726418',price:'6,30 €',note:'dziecięcy (Emilka)',imgKey:'trenord3-1'},
+{code:'2755726420',price:'12,50 €',imgKey:'trenord2-1'},
+{code:'2755726422',price:'12,50 €',imgKey:'trenord4-1'},
+{code:'2755726423',price:'12,50 €',imgKey:'trenord5-1'},
+{code:'2755726425',price:'12,50 €',imgKey:'trenord6-1'}
+],total:'68,80 €',warn:'⚠️ SKASOWAĆ bilet w automacie na peronie przed wejściem do pociągu!'},
+
+{day:5,date:'04.05.2026',icon:'🚂',title:'Trenord: Tirano → Milano',
+subtitle:'Regionale 2843, 2ª Classe',venue:'Tirano → Milano Centrale',
+time:'20:08 → 22:40',
+tickets:[
+{code:'2755726426',price:'12,50 €',imgKey:'trenord1-2'},
+{code:'2755726427',price:'6,30 €',note:'dziecięcy (Emilka)',imgKey:'trenord3-2'},
+{code:'2755726428',price:'12,50 €',imgKey:'trenord2-2'},
+{code:'2755726429',price:'12,50 €',imgKey:'trenord4-2'},
+{code:'2755726431',price:'12,50 €',imgKey:'trenord5-2'},
+{code:'2755726432',price:'12,50 €',imgKey:'trenord6-2'}
+],total:'68,80 €',warn:'Skasować bilet! Automat na peronie w Tirano.'},
+
+{day:5,date:'04.05.2026',icon:'🏔️',title:'Bernina Express: Tirano → St. Moritz',
+subtitle:'Rhätische Bahn, pociąg 4640, Wagon 1',venue:'Tirano → St. Moritz',
+time:'09:41 → 12:11',res:'2817044-1',seats:'35-36, 41-42, 45-46',
+tickets:[
+{name:'Woloszyk Anna',price:'CHF 33,00',imgKey:'bernina-01'},
+{name:'Grablewska Zuzanna',price:'CHF 33,00',imgKey:'bernina-05'},
+{name:'Wasilewska Justyna',price:'CHF 33,00',imgKey:'bernina-07'},
+{name:'Wasilewska Emilia',price:'CHF 16,50',note:'Reduced 1/2',imgKey:'bernina-09'},
+{name:'Harasim Teresa',price:'CHF 33,00',imgKey:'bernina-11'},
+{name:'Poczobut Lucyna',price:'CHF 33,00',imgKey:'bernina-13'}
+],total:'CHF 181,50',warn:'Bilety IMIENNE — każda musi mieć dokument tożsamości! Rezerwacja + bilet = OBA dokumenty.',
+resImgKeys:['bernina-03']},
+
+{day:5,date:'04.05.2026',icon:'🏔️',title:'Bernina Express: St. Moritz → Tirano',
+subtitle:'Rhätische Bahn, pociąg 1649, Wagon 1',venue:'St. Moritz → Tirano',
+time:'16:48 → 19:02',res:'2817045-1',seats:'35-36, 41-42, 45-46',
+tickets:[
+{name:'Woloszyk Anna',price:'CHF 33,00',imgKey:'bernina-02'},
+{name:'Grablewska Zuzanna',price:'CHF 33,00',imgKey:'bernina-06'},
+{name:'Wasilewska Justyna',price:'CHF 33,00',imgKey:'bernina-08'},
+{name:'Wasilewska Emilia',price:'CHF 16,50',note:'Reduced 1/2',imgKey:'bernina-10'},
+{name:'Harasim Teresa',price:'CHF 33,00',imgKey:'bernina-12'},
+{name:'Poczobut Lucyna',price:'CHF 33,00',imgKey:'bernina-14'}
+],total:'CHF 181,50',warn:'Te same miejsca co tam. PRAWA strona przy powrocie!',
+resImgKeys:['bernina-04']}
+];
+
+const TICKET_SUMMARY=[
+{item:'Koncert skrzypcowy (4 os.)',cost:'56,16 €'},
+{item:'Duomo Combo Stairs (6 os.)',cost:'110,00 €'},
+{item:'Bugs Bunny (4 os.)',cost:'72,00 €'},
+{item:'Trenord tam+powrót (6 os.)',cost:'137,60 €'},
+{item:'Bernina Express tam+powrót (6 os.)',cost:'363,00 CHF (~385 €)'},
+{item:'RAZEM',cost:'~760 €',hl:true}
+];
+
+// Map ticket events to day items for linking
+const TICKET_DAY_LINKS={
+'3-7':'koncert','3-8':'koncert', // day3 items: Teatro, Koncert
+'4-3':'duomo','4-4':'duomo','4-5':'duomo','4-6':'duomo', // Duomo items
+'4-10':'bugs','4-11':'bugs', // Auditorium, Bugs Bunny
+'5-2':'trenord-tam','5-3':'trenord-tam', // MI→Tirano
+'5-4':'bernina-tam', // Bernina
+'5-11':'trenord-pow','5-12':'trenord-pow','5-13':'trenord-pow' // return
+};
+
+function getTodayDay(){
+var tripStart=new Date(2026,3,30); // April 30
+var now=new Date();
+var diff=Math.floor((now-tripStart)/(1000*60*60*24));
+if(diff>=0&&diff<7)return diff+1;
+return -1;
+}
+
+function openFullscreen(src){
+document.getElementById('fsImg').src=src;
+document.getElementById('fsOverlay').classList.add('open');
+document.body.style.overflow='hidden';
+}
+function closeFullscreen(){
+document.getElementById('fsOverlay').classList.remove('open');
+document.body.style.overflow='';
+}
+
+function renderTickets(){
+var c=document.getElementById('ticketsContainer');
+var h='';
+var todayDay=getTodayDay();
+var grouped={};
+TICKET_EVENTS.forEach(function(ev,ei){
+if(!grouped[ev.day])grouped[ev.day]={date:ev.date,events:[]};
+grouped[ev.day].events.push({ev:ev,idx:ei});
+});
+var dayNames={3:'Dzień 3 — Sobota, 2 maja',4:'Dzień 4 — Niedziela, 3 maja',5:'Dzień 5 — Poniedziałek, 4 maja'};
+for(var day in grouped){
+var isToday=parseInt(day)===todayDay;
+h+='<div class="ticket-day-group"><div class="ticket-day-title">'+dayNames[day];
+if(isToday)h+='<span class="today-badge">DZIŚ</span>';
+h+='</div>';
+grouped[day].events.forEach(function(item){
+var ev=item.ev;var ei=item.idx;
+var todayCls=isToday?' today':'';
+h+='<div class="ticket-card'+todayCls+'" onclick="toggleTicketBody(\'tb-'+ei+'\')">';
+h+='<div class="ticket-header"><span class="ticket-icon">'+ev.icon+'</span>';
+h+='<span class="ticket-title">'+ev.title+'</span>';
+h+='<span class="ticket-time">'+ev.time+'</span></div>';
+h+='<div class="ticket-sub">'+ev.venue+(ev.gate?' · '+ev.gate:'')+'</div>';
+if(ev.seats)h+='<div class="ticket-sub">Miejsca: '+ev.seats+'</div>';
+h+='<div class="ticket-seats">';
+ev.tickets.forEach(function(t){
+var label=t.seat||t.name||t.code||'';
+h+='<span class="seat-badge">'+label+(t.note?' ('+t.note+')':'')+'</span>';
+});
+h+='</div>';
+if(ev.warn)h+='<div class="ticket-warning">⚠️ '+ev.warn+'</div>';
+// Expandable body with images
+h+='<div class="ticket-body" id="tb-'+ei+'">';
+h+='<div class="ticket-details"><strong>Łącznie:</strong> '+ev.total+'</div>';
+// Reservation images if any
+if(ev.resImgKeys){
+h+='<div style="margin:8px 0"><strong style="font-size:12px">Rezerwacja ('+ev.res+'):</strong></div>';
+ev.resImgKeys.forEach(function(rk){
+if(typeof TICKET_IMAGES!=='undefined'&&TICKET_IMAGES[rk]){
+h+='<div class="ticket-img-wrap"><img src="'+TICKET_IMAGES[rk]+'" loading="lazy" onclick="event.stopPropagation();openFullscreen(this.src)">';
+h+='<button class="ticket-zoom-btn" onclick="event.stopPropagation();openFullscreen(TICKET_IMAGES[\''+rk+'\'])">🔍 Powiększ</button></div>';
+}});
+}
+// Person selector for named tickets (Bernina)
+if(ev.tickets[0].name){
+h+='<div style="margin-top:8px"><select class="ticket-person-select" onchange="event.stopPropagation();showPersonTicket('+ei+',this.value)" onclick="event.stopPropagation()">';
+h+='<option value="">— Wybierz uczestniczkę —</option>';
+ev.tickets.forEach(function(t,ti){
+h+='<option value="'+ti+'">'+t.name+(t.note?' ('+t.note+')':'')+' — '+t.price+'</option>';
+});
+h+='</select></div>';
+h+='<div id="person-ticket-'+ei+'"></div>';
+}else{
+// Show all ticket images
+ev.tickets.forEach(function(t,ti){
+var label=t.seat||t.code||'Bilet '+(ti+1);
+if(typeof TICKET_IMAGES!=='undefined'&&TICKET_IMAGES[t.imgKey]){
+h+='<div style="margin-top:8px"><div style="font-size:12px;font-weight:600;margin-bottom:4px">'+label+' · '+t.type+' · '+t.price+'</div>';
+h+='<div class="ticket-img-wrap"><img src="'+TICKET_IMAGES[t.imgKey]+'" loading="lazy" onclick="event.stopPropagation();openFullscreen(this.src)">';
+h+='<button class="ticket-zoom-btn" onclick="event.stopPropagation();openFullscreen(TICKET_IMAGES[\''+t.imgKey+'\'])">🔍 Powiększ</button></div></div>';
+}});
+}
+h+='</div>'; // end ticket-body
+h+='</div>'; // end ticket-card
+});
+h+='</div>';
+}
+// Summary
+h+='<div class="ticket-summary"><div class="ticket-summary-card"><h3>💰 Podsumowanie kosztów biletów</h3>';
+TICKET_SUMMARY.forEach(function(s){
+h+='<div class="info-row'+(s.hl?' style="font-weight:700;font-size:15px;border-top:2px solid var(--blue)"':'')+'"><span>'+s.item+'</span><strong>'+s.cost+'</strong></div>';
+});
+h+='</div></div>';
+c.innerHTML=h;
+}
+
+function toggleTicketBody(id){
+document.getElementById(id).classList.toggle('open');
+}
+
+function showPersonTicket(evIdx,ticketIdx){
+var container=document.getElementById('person-ticket-'+evIdx);
+if(ticketIdx===''){container.innerHTML='';return;}
+var t=TICKET_EVENTS[evIdx].tickets[parseInt(ticketIdx)];
+if(typeof TICKET_IMAGES!=='undefined'&&TICKET_IMAGES[t.imgKey]){
+container.innerHTML='<div class="ticket-img-wrap"><img src="'+TICKET_IMAGES[t.imgKey]+'" loading="lazy" onclick="event.stopPropagation();openFullscreen(this.src)"><button class="ticket-zoom-btn" onclick="event.stopPropagation();openFullscreen(TICKET_IMAGES[\''+t.imgKey+'\'])">🔍 Powiększ bilet</button></div>';
+}else{
+container.innerHTML='<div style="font-size:12px;color:#888;padding:8px">Obraz biletu niedostępny</div>';
+}
+}
+
+function goToTicket(evtType){
+// Switch to tickets tab
+document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active')});
+document.querySelectorAll('.nav-btn')[2].classList.add('active');
+document.querySelectorAll('.tab-content').forEach(function(t){t.classList.remove('active')});
+document.getElementById('tab-tickets').classList.add('active');
+window.scrollTo({top:0,behavior:'smooth'});
+}
+
 // INIT
 renderDayTabs();
 renderDays();
 renderMapGrid();
 renderPlaces();
 renderInfo();
+renderTickets();
 setTimeout(function(){initMap(0)},300);
 </script>
 </body>
