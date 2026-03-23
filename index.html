@@ -897,12 +897,38 @@ L.marker([m.lat,m.lng],{icon:icon}).addTo(map).bindPopup(popupHtml);
 bounds.push([m.lat,m.lng]);
 });
 if(bounds.length>1){
-L.polyline(bounds,{color:'#2b6cb0',weight:2,dashArray:'6,8',opacity:.6}).addTo(map);
 map.fitBounds(bounds,{padding:[30,30]});
+// Check if markers are in one city (close together) → fetch real walking route
+var maxDist=0;
+for(var k=1;k<bounds.length;k++){
+var dd=Math.abs(bounds[k][0]-bounds[0][0])+Math.abs(bounds[k][1]-bounds[0][1]);
+if(dd>maxDist)maxDist=dd;
+}
+if(maxDist<0.15){
+// Same city — use OSRM foot routing for real streets
+fetchWalkingRoute(map,bounds);
+}else{
+// Long distance — dashed line
+L.polyline(bounds,{color:'#2b6cb0',weight:2,dashArray:'6,8',opacity:.6}).addTo(map);
+}
 }else if(bounds.length===1){
 map.setView(bounds[0],14);
 }
 _maps[idx]=map;
+}
+function fetchWalkingRoute(map,waypoints){
+var coords=waypoints.map(function(w){return w[1]+','+w[0]}).join(';');
+var url='https://router.project-osrm.org/route/v1/foot/'+coords+'?overview=full&geometries=geojson';
+fetch(url).then(function(r){return r.json()}).then(function(data){
+if(data.routes&&data.routes[0]){
+var pts=data.routes[0].geometry.coordinates.map(function(c){return[c[1],c[0]]});
+L.polyline(pts,{color:'#2b6cb0',weight:3,opacity:.7}).addTo(map);
+}else{
+L.polyline(waypoints,{color:'#2b6cb0',weight:2,dashArray:'6,8',opacity:.6}).addTo(map);
+}
+}).catch(function(){
+L.polyline(waypoints,{color:'#2b6cb0',weight:2,dashArray:'6,8',opacity:.6}).addTo(map);
+});
 }
 
 function switchDay(i){
